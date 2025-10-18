@@ -5,9 +5,50 @@ from tkinter import ttk # ttk모듈 불러옴
 WINDOW_WIDTH = 600 # 창 가로 길이
 WINDOW_HEIGHT = 400 # 창 세로 길이
 
+# 입력창+버튼 생성 함수
+def create_input_widgets(day):
+    # input_frame 안의 기존 위젯들 삭제
+    for widget in input_frame.winfo_children():
+        widget.destroy()
+    
+    # 수업 입력 Entry 생성
+    entry = ttk.Entry(input_frame, width=30)
+    entry.grid(row=0, column=0, padx=5, pady=5)
+    
+    #추가 버튼 생성
+    add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
+    add_btn.grid(row=0, column=1, padx=5, pady=5)
+    
+    # 저장된 수업들을 Label로 표시
+    for i, cls in enumerate(timetable_data[day]):
+        lbl = ttk.Label(input_frame, text=cls)
+        lbl.grid(row=i+1, column=0, columnspan=2, sticky="w", padx=5)
+
+    return entry
+
 # 동작 확인용 함수
 def show_timetable(day):
-    print(f"{day} 버튼이 눌림")
+    create_input_widgets(day) # 함수 호출
+
+# 입력값 저장+화면 표시 처리 함수
+def add_class(day, class_name):
+    if class_name: # 입력값이 비어있지 않을 때
+        timetable_data[day].append(class_name) # 딕셔너리에 저장
+    
+    create_input_widgets(day) # 함수 호출
+    
+    # Entry 초기화
+    entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
+    entry_widget.delete(0, tk.END)
+
+# 요일별 수업 딕셔너리
+timetable_data = {
+    "월": [],
+    "화": [],
+    "수": [],
+    "목": [],
+    "금": [],
+}
 
 # Tkinter 기본 설정
 root = tk.Tk() # 메인 창을 생성
@@ -33,7 +74,7 @@ input_frame = ttk.Frame(tab_timetable) # tab_timetable 안에 Frame 생성
 input_frame.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew") # 세팅
 
 # 창 크기에 따라 가로로 늘어가게 함
-for i in range(len(day)):
+for i in range(len(days)):
     tab_timetable.columnconfigure(i, weight=1)
 
 
