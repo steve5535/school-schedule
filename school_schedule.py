@@ -1,9 +1,32 @@
 import tkinter as tk # tkinter라이브러리를 tk로 불러옴
 from tkinter import ttk # ttk모듈 불러옴
+import json # json라이브러리 불러옴
+import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 
 # 상수 설정
 WINDOW_WIDTH = 600 # 창 가로 길이
 WINDOW_HEIGHT = 400 # 창 세로 길이
+
+# 요일별 수업 딕셔너리
+timetable_data = {
+    "월": [],
+    "화": [],
+    "수": [],
+    "목": [],
+    "금": [],
+}
+
+# 저장용 함수
+def save_timetable():
+    with open("timetable.json", "w", encoding="utf-8") as f:
+        json.dump(timetable_data, f, ensure_ascii=False, indent=4)
+
+# 불러오기 함수
+def load_timetable():
+    global timetable_data
+    if os.path.exists("timetable.json"):
+        with open("timetable.json", "r", encoding="utf-8") as f:
+            timetable_data = json.loads(f)
 
 # 입력창+버튼 생성 함수
 def create_input_widgets(day):
@@ -34,21 +57,13 @@ def show_timetable(day):
 def add_class(day, class_name):
     if class_name: # 입력값이 비어있지 않을 때
         timetable_data[day].append(class_name) # 딕셔너리에 저장
-    
+        save_timetable() # 저장
     create_input_widgets(day) # 함수 호출
-    
     # Entry 초기화
     entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
     entry_widget.delete(0, tk.END)
 
-# 요일별 수업 딕셔너리
-timetable_data = {
-    "월": [],
-    "화": [],
-    "수": [],
-    "목": [],
-    "금": [],
-}
+load_timetable() # 함수 호출
 
 # Tkinter 기본 설정
 root = tk.Tk() # 메인 창을 생성
