@@ -8,13 +8,7 @@ WINDOW_WIDTH = 600 # 창 가로 길이
 WINDOW_HEIGHT = 400 # 창 세로 길이
 
 # 요일별 수업 딕셔너리
-timetable_data = {
-    "월": [],
-    "화": [],
-    "수": [],
-    "목": [],
-    "금": [],
-}
+timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
 # 저장용 함수
 def save_timetable():
@@ -25,8 +19,11 @@ def save_timetable():
 def load_timetable():
     global timetable_data
     if os.path.exists("timetable.json"):
-        with open("timetable.json", "r", encoding="utf-8") as f:
-            timetable_data = json.loads(f)
+        try:
+            with open("timetable.json", "r", encoding="utf-8") as f:
+                timetable_data = json.load(f)
+        except json.JSONDecodeError:
+            timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
 # 입력창+버튼 생성 함수
 def create_input_widgets(day):
