@@ -42,9 +42,19 @@ def create_input_widgets(day):
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
         lbl = ttk.Label(input_frame, text=cls)
-        lbl.grid(row=i+1, column=0, columnspan=2, sticky="w", padx=5)
+        lbl.grid(row=i+1, column=0, sticky="w", padx=5)
+        
+        del_btn = ttk.Button(input_frame, text="삭제", width=5, command=lambda c=cls: delete_class(day,c))
+        del_btn.grid(row=i+1, column=1, padx=5)
 
     return entry
+
+# 삭제 함수
+def delete_class(day, class_name):
+    if class_name in timetable_data[day]:
+        timetable_data[day].remove(class_name)
+        save_timetable()
+    create_input_widgets(day)
 
 # 동작 확인용 함수
 def show_timetable(day):
