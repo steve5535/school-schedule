@@ -5,6 +5,10 @@ from tkinter import ttk # ttk모듈 불러옴
 WINDOW_WIDTH = 600 # 창 가로 길이
 WINDOW_HEIGHT = 400 # 창 세로 길이
 
+# 동작 확인용 함수
+def show_timetable(day):
+    print(f"{day} 버튼이 눌림")
+
 # Tkinter 기본 설정
 root = tk.Tk() # 메인 창을 생성
 root.title("학교 일정 관리 앱") # 창 이름
@@ -20,13 +24,17 @@ notebook.add(tab_timetable, text="시간표") # 탭에 프레임 연결,이름 �
 
 # 월~금 버튼 배치
 days = ["월", "화", "수", "목", "금"] # 리스트에 요일 저장
-
 for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
-    button = ttk.Button(tab_timetable, text=day) # 버튼 생성
+    button = ttk.Button(tab_timetable, text=day, command=lambda d=day: show_timetable(d)) # 버튼 생성
     button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
+
+# 입력 프레임 생성
+input_frame = ttk.Frame(tab_timetable) # tab_timetable 안에 Frame 생성
+input_frame.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew") # 세팅
 
 # 창 크기에 따라 가로로 늘어가게 함
 for i in range(len(day)):
     tab_timetable.columnconfigure(i, weight=1)
+
 
 root.mainloop() # 메인 루프
