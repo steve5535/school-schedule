@@ -46,30 +46,22 @@ def create_input_widgets(day):
     for i, cls in enumerate(timetable_data[day]):
         lbl = ttk.Label(input_frame, text=cls)
         lbl.grid(row=i+1, column=0, sticky="w", padx=5)
-        
+        # 삭제 버튼
         del_btn = ttk.Button(input_frame, text="삭제", width=5, command=lambda c=cls: delete_class(day,c))
         del_btn.grid(row=i+1, column=1, padx=5)
+        # 수정 버튼
+        edit_btn = ttk.Button(input_frame, text="수정", width=5, command=lambda c=cls: edit_class(day, c))
+        edit_btn.grid(row=i+1, column=2, padx=5)
 
     return entry
 
-# 삭제 함수
-def delete_class(day, class_name):
-    if class_name in timetable_data[day]:
-        timetable_data[day].remove(class_name)
-        save_timetable()
-    create_input_widgets(day)
-
-# 동작 확인용 함수
-def show_timetable(day):
-    create_input_widgets(day) # 함수 호출
-
-# 입력값 저장+화면 표시 처리 함수
+# 수업 이름 추가 함수
 def add_class(day, class_name=None, event=None):
     if class_name is None:
         entry_widget = input_frame.winfo_children()[0]
         class_name = entry_widget.get() #class_name 변수에 저장
     
-    if class_name: # 입력값이 비어있지 않을 때
+    if class_name.strip(): # 입력값이 비어있지 않을 때
         timetable_data[day].append(class_name) # 딕셔너리에 저장
         save_timetable() # 저장
     
@@ -77,6 +69,47 @@ def add_class(day, class_name=None, event=None):
     # Entry 초기화
     entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
     entry_widget.delete(0, tk.END)
+
+# 수업 이름 삭제 함수
+def delete_class(day, class_name):
+    if class_name in timetable_data[day]:
+        timetable_data[day].remove(class_name)
+        save_timetable()
+    create_input_widgets(day)
+
+# 수업 이름 수정 함수
+def edit_class(day, old_name):
+    # 기존 위젯 제거
+    for widget in input_frame.winfo_children():
+        widget.destroy()
+    
+    # 기존 이름이 있는 Entry
+    entry = ttk.Entry(input_frame, width=30)
+    entry.insert(0, old_name) # 기존에 있던 수업 이름 입력창에 표시
+    entry.grid(row=0, column=0, padx=5, pady=5)
+    
+    # Enter키로 수정
+    entry.bind('<Return>', lambda event: update_class(day, old_name, entry.get()))
+    
+    # 수정 완료 버튼
+    save_edit_btn = ttk.Button(input_frame, text="수정 완료", command=lambda: update_class(day, old_name, entry.get()))
+    save_edit_btn.grid(row=0, column=1, padx=5, pady=5)
+
+# 수업 이름 수정 후 저장 함수
+def update_class(day, old_name, new_name):
+    if new_name.strip(): # 입력값이 비어있지 않을 때
+        try:
+            index = timetable_data[day].index(old_name)
+            timetable_data[day][index] = new_name # 새 이름으로 변경
+            save_timetable()
+        except ValueError:
+            pass # old_name이 없을 경우 대비
+    
+    create_input_widgets(day) # 함수 호출
+
+# 동작 확인용 함수
+def show_timetable(day):
+    create_input_widgets(day) # 함수 호출
 
 load_timetable() # 함수 호출
 
