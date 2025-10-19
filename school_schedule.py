@@ -35,6 +35,9 @@ def create_input_widgets(day):
     entry = ttk.Entry(input_frame, width=30)
     entry.grid(row=0, column=0, padx=5, pady=5)
     
+    # Enter 키로 추가
+    entry.bind('<Return>', lambda event: add_class(day, event=event))
+    
     #추가 버튼 생성
     add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
     add_btn.grid(row=0, column=1, padx=5, pady=5)
@@ -61,10 +64,15 @@ def show_timetable(day):
     create_input_widgets(day) # 함수 호출
 
 # 입력값 저장+화면 표시 처리 함수
-def add_class(day, class_name):
+def add_class(day, class_name=None, event=None):
+    if class_name is None:
+        entry_widget = input_frame.winfo_children()[0]
+        class_name = entry_widget.get() #class_name 변수에 저장
+    
     if class_name: # 입력값이 비어있지 않을 때
         timetable_data[day].append(class_name) # 딕셔너리에 저장
         save_timetable() # 저장
+    
     create_input_widgets(day) # 함수 호출
     # Entry 초기화
     entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
