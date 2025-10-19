@@ -45,13 +45,17 @@ def create_input_widgets(day):
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
         lbl = ttk.Label(input_frame, text=cls)
-        lbl.grid(row=i+1, column=0, sticky="w", padx=5)
+        lbl.grid(row=i+1, column=0, sticky="nsew", padx=5)
         # 삭제 버튼
         del_btn = ttk.Button(input_frame, text="삭제", width=5, command=lambda c=cls: delete_class(day,c))
-        del_btn.grid(row=i+1, column=1, padx=5)
+        del_btn.grid(row=i+1, column=1, sticky="nsew", padx=5)
         # 수정 버튼
         edit_btn = ttk.Button(input_frame, text="수정", width=5, command=lambda c=cls: edit_class(day, c))
-        edit_btn.grid(row=i+1, column=2, padx=5)
+        edit_btn.grid(row=i+1, column=2, sticky="nsew", padx=5)
+    
+    # 창 크기에 따라 버튼 늘어나게 함
+    for i in range(3):
+        input_frame.columnconfigure(i, weight=1)
 
     return entry
 
