@@ -49,9 +49,15 @@ def create_input_widgets(day):
         # 삭제 버튼
         del_btn = ttk.Button(input_frame, text="삭제", width=5, command=lambda c=cls: delete_class(day,c))
         del_btn.grid(row=i+1, column=1, sticky="nsew", padx=5)
+        # 위로 이동 버튼
+        up_btn = ttk.Button(input_frame, text="↑", command=lambda i=i: move_class_up(day,i))
+        up_btn.grid(row=i+1, column=2, sticky="nsew", padx=5)
+        # 아래로 이동 버튼
+        down_btn = ttk.Button(input_frame, text="↓", command=lambda i=i: move_class_down(day,i))
+        down_btn.grid(row=i+1, column=3, sticky="nsew", padx=5)
         # 수정 버튼
         edit_btn = ttk.Button(input_frame, text="수정", width=5, command=lambda c=cls: edit_class(day, c))
-        edit_btn.grid(row=i+1, column=2, sticky="nsew", padx=5)
+        edit_btn.grid(row=i+1, column=4, sticky="nsew", padx=5)
     
     # 창 크기에 따라 버튼 늘어나게 함
     for i in range(3):
