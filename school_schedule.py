@@ -111,6 +111,13 @@ def update_class(day, old_name, new_name):
     
     create_input_widgets(day) # 함수 호출
 
+# 수업 이름 위로 이동 함수
+def move_class_up(day, index):
+    if index > 0:
+        timetable_data[day][index], timetable_data[day][index-1] = timetable_data[day][index-1], timetable_data[day][index]
+        save_timetable()
+        create_input_widgets(day)
+
 # 동작 확인용 함수
 def show_timetable(day):
     create_input_widgets(day) # 함수 호출
