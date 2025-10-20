@@ -38,9 +38,26 @@ def create_input_widgets(day):
     # Enter 키로 추가
     entry.bind('<Return>', lambda event: add_class(day, event=event))
     
-    #추가 버튼 생성
+    # 추가 버튼 생성
     add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
     add_btn.grid(row=0, column=1, padx=5, pady=5)
+    
+    # 플레이스홀더 텍스트 추가
+    entry.insert(0, "수업 이름") # 기본 문구
+    entry.configure(foreground="gray") # 글씨 색 연하게
+    
+    def on_focus_in(event): # 입력창 클릭시 사라지게 하는 함수
+        if entry.get() == "수업 이름":
+            entry.delete(0, tk.END)
+            entry.configure(foreground="black")
+    
+    def on_focus_out(event): # 입력창이 비어 있을시 문구 표시 함수
+        if not entry.get():
+            entry.insert(0, "수업 이름")
+            entry.configure(foreground="gray")
+    
+    entry.bind("<FocusIn>", on_focus_in)
+    entry.bind("<FocusOut>", on_focus_out)
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
