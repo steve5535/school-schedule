@@ -96,6 +96,10 @@ def add_class(day, class_name=None, event=None):
     # Entry 초기화
     entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
     entry_widget.delete(0, tk.END)
+    entry_widget.focus_set()
+    
+    #플레이홀더 텍스트 색 복구 방지
+    entry_widget.configure(foreground="black")
 
 # 수업 이름 삭제 함수
 def delete_class(day, class_name):
