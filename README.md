@@ -23,6 +23,7 @@ Python과 Tkinter를 사용하여 개발한 **학교 시간표 관리 앱**입�
 ``` bash
 pip install tk
 ```
+3. 실행
 ``` bash
 python main.py
 ```
