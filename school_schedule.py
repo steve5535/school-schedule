@@ -107,51 +107,77 @@ def add_class(day, class_name=None, event=None):
     #플레이홀더 텍스트 색 복구 방지
     entry_widget.configure(foreground="black")
 
+item_window = {}
+
 # 준비물 입력창 함수
 def open_item_window(day, class_data):
+    class_name = class_data["name"]
+    
+    # 창이 이미 열려 있으면 재사용
+    if class_name in item_window and item_window[class_name].winfo_exists():
+        item_window[class_name].lift()
+        return
+    
     win = tk.Toplevel(root)
-    win.title(f"{class_data['name']} 준비물")
+    win.title(f"{class_name} 준비물")
     win.geometry(f"{ITEM_WIDTH}x{ITEM_HEIGHT}")
+    item_window[class_name] = win
     
-    # 창 크기에 따라 크기 변경
-    for i in range(3):
-        win.columnconfigure(i, weight=i+1)
+    # 준비물 목록 Frame
+    item_frame = ttk.Frame(win)
+    item_frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
     
-    entry = ttk.Entry(win, width=25)
-    entry.grid(row=0, column=0, padx=5, pady=5)
+    # 준비물 입력 창
+    entry = ttk.Entry(win)
+    entry.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
     
-    entry.bind('<Return>', lambda event: add_item(day, class_data, entry.get(), win))
-    
-    add_btn = ttk.Button(win, text="추가", command=lambda: add_item(day, class_data, entry.get(), win))
+    # 추가 버튼
+    add_btn = ttk.Button(win, text="추가", command=lambda: add_item(day, class_data, entry, item_frame))
     add_btn.grid(row=0, column=1, padx=5, pady=5)
     
-    # 준비물 목록 표시
-    for i, item in enumerate(class_data["items"]):
-        lbl = ttk.Label(win, text=item)
-        lbl.grid(row=i+1, column=0, sticky="w", padx=5)
-        
-        del_btn = ttk.Button(win, text="삭제", command=lambda it=item: delete_item(day, class_data, it, win))
-        del_btn.grid(row=i+1, column=1, padx=5)
+    # Enter키로 추가
+    entry.bind('<Return>', lambda event: add_item(day, class_data, entry, item_frame))
+    
+    # 창 크기에 따라 크기 변경
+    win.columnconfigure(0, weight=3)
+    win.columnconfigure(1, weight=1)
+    win.rowconfigure(1, weight=1)
+    
+    refresh_item_list(day, class_data, item_frame)
 
 # 준비물 추가 함수
-def add_item(day, cls, item_name, window):
+def add_item(day, cls, entry_widget, item_frame):
+    item_name = entry_widget.get()
     if item_name.strip():
         cls["items"].append(item_name)
         save_timetable()
-        window.destroy()
-        open_item_window(day, cls)
+        refresh_item_list(day, cls, item_frame)
+        entry_widget.delete(0, tk.END)
 
 # 준비물  삭제 함수
-def delete_item(day, cls, item_name, window):
+def delete_item(day, cls, item_name, item_frame):
     cls["items"].remove(item_name)
     save_timetable()
-    window.destroy()
-    open_item_window(day, cls)
+    refresh_item_list(day, cls, item_frame)
+
+# 준비물 목록 갱신 함수
+def refresh_item_list(day, cls, item_frame):
+    # 기존 위젯 제거
+    for widget in item_frame.winfo_children():
+        widget.destroy()
+    
+    # 준비물 Label + 삭제 버튼 생성
+    for i, item in enumerate(cls["items"]):
+        lbl = ttk.Label(item_frame, text=item)
+        lbl.grid(row=i, column=0, sticky="w", padx=5)
+        
+        del_btn = ttk.Button(item_frame, text="삭제", command=lambda it=item: delete_item(day, cls, it, item_frame))
+        del_btn.grid(row=i, column=1, padx=5)
 
 # 수업 이름 삭제 함수
-def delete_class(day, class_name):
-    if class_name in timetable_data[day]:
-        timetable_data[day].remove(class_name)
+def delete_class(day, class_to_delete):
+    if class_to_delete in timetable_data[day]:
+        timetable_data[day].remove(class_to_delete)
         save_timetable()
     create_input_widgets(day)
 
