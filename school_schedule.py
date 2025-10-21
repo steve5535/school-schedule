@@ -40,7 +40,7 @@ def create_input_widgets(day):
     
     # 추가 버튼 생성
     add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
-    add_btn.grid(row=0, column=1, padx=5, pady=5)
+    add_btn.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
     
     # 플레이스홀더 텍스트 추가
     entry.insert(0, "수업 이름") # 기본 문구
