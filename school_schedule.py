@@ -6,6 +6,8 @@ import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 # 상수 설정
 WINDOW_WIDTH = 600 # 창 가로 길이
 WINDOW_HEIGHT = 400 # 창 세로 길이
+ITEM_WIDTH = 300 # 준비물 창 가로 길이
+ITEM_HEIGHT = 200 # 준비물 창 세로 길이
 
 # 요일별 수업 딕셔너리
 timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
@@ -40,7 +42,7 @@ def create_input_widgets(day):
     
     # 추가 버튼 생성
     add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
-    add_btn.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
+    add_btn.grid(row=0, column=1, sticky="nsew",padx=5, pady=5)
     
     # 플레이스홀더 텍스트 추가
     entry.insert(0, "수업 이름") # 기본 문구
@@ -61,20 +63,23 @@ def create_input_widgets(day):
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
-        lbl = ttk.Label(input_frame, text=cls)
+        lbl = ttk.Label(input_frame, text=cls["name"])
         lbl.grid(row=i+1, column=0, sticky="nsew", padx=5)
+        # 준비물 추가 버튼
+        item_btn = ttk.Button(input_frame, text="준비물", command=lambda c=cls: open_item_window(day, c))
+        item_btn.grid(row=i+1, column=1, sticky="nsew", padx=5)
         # 삭제 버튼
         del_btn = ttk.Button(input_frame, text="삭제", width=3, command=lambda c=cls: delete_class(day,c))
-        del_btn.grid(row=i+1, column=1, sticky="nsew", padx=5)
+        del_btn.grid(row=i+1, column=2, sticky="nsew", padx=5)
         # 위로 이동 버튼
         up_btn = ttk.Button(input_frame, text="↑", width=3, command=lambda i=i: move_class_up(day,i))
-        up_btn.grid(row=i+1, column=2, sticky="nsew", padx=5)
+        up_btn.grid(row=i+1, column=3, sticky="nsew", padx=5)
         # 아래로 이동 버튼
         down_btn = ttk.Button(input_frame, text="↓", width=3, command=lambda i=i: move_class_down(day,i))
-        down_btn.grid(row=i+1, column=3, sticky="nsew", padx=5)
+        down_btn.grid(row=i+1, column=4, sticky="nsew", padx=5)
         # 수정 버튼
         edit_btn = ttk.Button(input_frame, text="수정", width=3, command=lambda c=cls: edit_class(day, c))
-        edit_btn.grid(row=i+1, column=4, sticky="nsew", padx=5)
+        edit_btn.grid(row=i+1, column=5, sticky="nsew", padx=5)
     
     # 창 크기에 따라 버튼 늘어나게 함
     for i in range(5):
@@ -89,7 +94,7 @@ def add_class(day, class_name=None, event=None):
         class_name = entry_widget.get() #class_name 변수에 저장
     
     if class_name.strip(): # 입력값이 비어있지 않을 때
-        timetable_data[day].append(class_name) # 딕셔너리에 저장
+        timetable_data[day].append({"name": class_name, "items": []}) # 딕셔너리에 저장
         save_timetable() # 저장
     
     create_input_widgets(day) # 함수 호출
@@ -101,6 +106,41 @@ def add_class(day, class_name=None, event=None):
     #플레이홀더 텍스트 색 복구 방지
     entry_widget.configure(foreground="black")
 
+# 준비물 입력창 함수
+def open_item_window(day, class_data):
+    win = tk.Toplevel(root)
+    win.title(f"{class_data['name']} 준비물")
+    win.geometry(f"{ITEM_WIDTH}x{ITEM_HEIGHT}")
+    
+    entry = ttk.Entry(win, width=25)
+    entry.grid(row=0, column=0, padx=5, pady=5)
+    
+    add_btn = ttk.Button(win, text="추가", command=lambda: add_item(day, class_data, entry.get(), win))
+    add_btn.grid(row=0, column=1, padx=5, pady=5)
+    
+    # 준비물 목록 표시
+    for i, item in enumerate(class_data["items"]):
+        lbl = ttk.Label(win, text=item)
+        lbl.grid(row=i+1, column=0, sticky="w", padx=5)
+        
+        del_btn = ttk.Button(win, text="삭제", command=lambda it=item: delete_item(day, class_data, it, win))
+        del_btn.grid(row=i+1, column=1, padx=5)
+    
+    # 준비물 추가 함수
+    def add_item(day, cls, item_name, window):
+        if item_name.strip():
+            cls["items"].append(item_name)
+            save_timetable()
+            window.destroy()
+            open_item_window(day, cls)
+    
+    # 준비물  삭제 함수
+    def delete_item(day, cls, item_name, window):
+        cls["items"].remove(item_name)
+        save_timetable()
+        window.destroy()
+        open_item_window(day, cls)
+
 # 수업 이름 삭제 함수
 def delete_class(day, class_name):
     if class_name in timetable_data[day]:
@@ -109,32 +149,28 @@ def delete_class(day, class_name):
     create_input_widgets(day)
 
 # 수업 이름 수정 함수
-def edit_class(day, old_name):
+def edit_class(day, cls):
     # 기존 위젯 제거
     for widget in input_frame.winfo_children():
         widget.destroy()
     
     # 기존 이름이 있는 Entry
     entry = ttk.Entry(input_frame, width=30)
-    entry.insert(0, old_name) # 기존에 있던 수업 이름 입력창에 표시
+    entry.insert(0, cls["name"]) # 기존 이름 표시
     entry.grid(row=0, column=0, padx=5, pady=5)
     
     # Enter키로 수정
-    entry.bind('<Return>', lambda event: update_class(day, old_name, entry.get()))
+    entry.bind('<Return>', lambda event: update_class(day, cls, entry.get()))
     
     # 수정 완료 버튼
-    save_edit_btn = ttk.Button(input_frame, text="수정 완료", command=lambda: update_class(day, old_name, entry.get()))
+    save_edit_btn = ttk.Button(input_frame, text="수정 완료", command=lambda: update_class(day, cls, entry.get()))
     save_edit_btn.grid(row=0, column=1, padx=5, pady=5)
 
 # 수업 이름 수정 후 저장 함수
-def update_class(day, old_name, new_name):
+def update_class(day, cls, new_name):
     if new_name.strip(): # 입력값이 비어있지 않을 때
-        try:
-            index = timetable_data[day].index(old_name)
-            timetable_data[day][index] = new_name # 새 이름으로 변경
-            save_timetable()
-        except ValueError:
-            pass # old_name이 없을 경우 대비
+        cls["name"] = new_name # 딕셔너리 안 이름 수정
+        save_timetable()
     
     create_input_widgets(day) # 함수 호출
 
@@ -157,6 +193,12 @@ def show_timetable(day):
     create_input_widgets(day) # 함수 호출
 
 load_timetable() # 함수 호출
+
+# 문자열로 저장된 수업 데이터를 딕셔너리로 변환
+for day in timetable_data:
+    for i, cls in enumerate(timetable_data[day]):
+        if isinstance(cls, str): # cls가 문자열이면
+            timetable_data[day][i] = {"name": cls, "items": []} # 딕셔너리로 변환
 
 # Tkinter 기본 설정
 root = tk.Tk() # 메인 창을 생성
