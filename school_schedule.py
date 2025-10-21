@@ -6,6 +6,7 @@ import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 # 상수 설정
 WINDOW_WIDTH = 600 # 창 가로 길이
 WINDOW_HEIGHT = 400 # 창 세로 길이
+
 ITEM_WIDTH = 300 # 준비물 창 가로 길이
 ITEM_HEIGHT = 200 # 준비물 창 세로 길이
 
@@ -112,8 +113,14 @@ def open_item_window(day, class_data):
     win.title(f"{class_data['name']} 준비물")
     win.geometry(f"{ITEM_WIDTH}x{ITEM_HEIGHT}")
     
+    # 창 크기에 따라 크기 변경
+    for i in range(3):
+        win.columnconfigure(i, weight=i+1)
+    
     entry = ttk.Entry(win, width=25)
     entry.grid(row=0, column=0, padx=5, pady=5)
+    
+    entry.bind('<Return>', lambda event: add_item(day, class_data, entry.get(), win))
     
     add_btn = ttk.Button(win, text="추가", command=lambda: add_item(day, class_data, entry.get(), win))
     add_btn.grid(row=0, column=1, padx=5, pady=5)
@@ -125,21 +132,21 @@ def open_item_window(day, class_data):
         
         del_btn = ttk.Button(win, text="삭제", command=lambda it=item: delete_item(day, class_data, it, win))
         del_btn.grid(row=i+1, column=1, padx=5)
-    
-    # 준비물 추가 함수
-    def add_item(day, cls, item_name, window):
-        if item_name.strip():
-            cls["items"].append(item_name)
-            save_timetable()
-            window.destroy()
-            open_item_window(day, cls)
-    
-    # 준비물  삭제 함수
-    def delete_item(day, cls, item_name, window):
-        cls["items"].remove(item_name)
+
+# 준비물 추가 함수
+def add_item(day, cls, item_name, window):
+    if item_name.strip():
+        cls["items"].append(item_name)
         save_timetable()
         window.destroy()
         open_item_window(day, cls)
+
+# 준비물  삭제 함수
+def delete_item(day, cls, item_name, window):
+    cls["items"].remove(item_name)
+    save_timetable()
+    window.destroy()
+    open_item_window(day, cls)
 
 # 수업 이름 삭제 함수
 def delete_class(day, class_name):
