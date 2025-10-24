@@ -28,6 +28,18 @@ def load_timetable():
         except json.JSONDecodeError:
             timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
+# 입력창 클릭시 플레이홀더를 사라지게 하는 함수
+def on_focus_in(event, entry):
+    if entry.get() == "수업 이름":
+        entry.delete(0, tk.END)
+        entry.configure(foreground="black")
+
+# 입력창이 비어 있을시 플레이홀더 문구 표시 함수
+def on_focus_out(event, entry):
+    if not entry.get():
+        entry.insert(0, "수업 이름")
+        entry.configure(foreground="gray")
+
 # 입력창+버튼 생성 함수
 def create_input_widgets(day):
     # input_frame 안의 기존 위젯들 삭제
@@ -49,18 +61,8 @@ def create_input_widgets(day):
     entry.insert(0, "수업 이름") # 기본 문구
     entry.configure(foreground="gray") # 글씨 색 연하게
     
-    def on_focus_in(event): # 입력창 클릭시 사라지게 하는 함수
-        if entry.get() == "수업 이름":
-            entry.delete(0, tk.END)
-            entry.configure(foreground="black")
-    
-    def on_focus_out(event): # 입력창이 비어 있을시 문구 표시 함수
-        if not entry.get():
-            entry.insert(0, "수업 이름")
-            entry.configure(foreground="gray")
-    
-    entry.bind("<FocusIn>", on_focus_in)
-    entry.bind("<FocusOut>", on_focus_out)
+    entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry))
+    entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry))
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
