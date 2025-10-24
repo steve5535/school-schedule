@@ -109,6 +109,53 @@ def add_class(day, class_name=None, event=None):
     #플레이홀더 텍스트 색 복구 방지
     entry_widget.configure(foreground="black")
 
+# 수업 이름 삭제 함수
+def delete_class(day, class_to_delete):
+    if class_to_delete in timetable_data[day]:
+        timetable_data[day].remove(class_to_delete)
+        save_timetable()
+    create_input_widgets(day)
+
+# 수업 이름 수정 함수
+def edit_class(day, cls):
+    # 기존 위젯 제거
+    for widget in input_frame.winfo_children():
+        widget.destroy()
+    
+    # 기존 이름이 있는 Entry
+    entry = ttk.Entry(input_frame, width=30)
+    entry.insert(0, cls["name"]) # 기존 이름 표시
+    entry.grid(row=0, column=0, padx=5, pady=5)
+    
+    # Enter키로 수정
+    entry.bind('<Return>', lambda event: update_class(day, cls, entry.get()))
+    
+    # 수정 완료 버튼
+    save_edit_btn = ttk.Button(input_frame, text="수정 완료", command=lambda: update_class(day, cls, entry.get()))
+    save_edit_btn.grid(row=0, column=1, padx=5, pady=5)
+
+# 수업 이름 수정 후 저장 함수
+def update_class(day, cls, new_name):
+    if new_name.strip(): # 입력값이 비어있지 않을 때
+        cls["name"] = new_name # 딕셔너리 안 이름 수정
+        save_timetable()
+    
+    create_input_widgets(day) # 함수 호출
+
+# 수업 이름 위로 이동 함수
+def move_class_up(day, index):
+    if index > 0:
+        timetable_data[day][index], timetable_data[day][index-1] = timetable_data[day][index-1], timetable_data[day][index]
+        save_timetable()
+        create_input_widgets(day)
+
+# 수업 이름 아래로 이동 함수
+def move_class_down(day, index):
+    if index < len(timetable_data[day])-1:
+        timetable_data[day][index], timetable_data[day][index+1] = timetable_data[day][index+1], timetable_data[day][index]
+        save_timetable()
+        create_input_widgets(day)
+
 item_window = {}
 
 # 준비물 입력창 함수
@@ -184,53 +231,6 @@ def refresh_item_list(day, cls, item_frame):
         
         del_btn = ttk.Button(item_frame, text="삭제", command=lambda it=item: delete_item(day, cls, it, item_frame))
         del_btn.grid(row=i, column=1, padx=5)
-
-# 수업 이름 삭제 함수
-def delete_class(day, class_to_delete):
-    if class_to_delete in timetable_data[day]:
-        timetable_data[day].remove(class_to_delete)
-        save_timetable()
-    create_input_widgets(day)
-
-# 수업 이름 수정 함수
-def edit_class(day, cls):
-    # 기존 위젯 제거
-    for widget in input_frame.winfo_children():
-        widget.destroy()
-    
-    # 기존 이름이 있는 Entry
-    entry = ttk.Entry(input_frame, width=30)
-    entry.insert(0, cls["name"]) # 기존 이름 표시
-    entry.grid(row=0, column=0, padx=5, pady=5)
-    
-    # Enter키로 수정
-    entry.bind('<Return>', lambda event: update_class(day, cls, entry.get()))
-    
-    # 수정 완료 버튼
-    save_edit_btn = ttk.Button(input_frame, text="수정 완료", command=lambda: update_class(day, cls, entry.get()))
-    save_edit_btn.grid(row=0, column=1, padx=5, pady=5)
-
-# 수업 이름 수정 후 저장 함수
-def update_class(day, cls, new_name):
-    if new_name.strip(): # 입력값이 비어있지 않을 때
-        cls["name"] = new_name # 딕셔너리 안 이름 수정
-        save_timetable()
-    
-    create_input_widgets(day) # 함수 호출
-
-# 수업 이름 위로 이동 함수
-def move_class_up(day, index):
-    if index > 0:
-        timetable_data[day][index], timetable_data[day][index-1] = timetable_data[day][index-1], timetable_data[day][index]
-        save_timetable()
-        create_input_widgets(day)
-
-# 수업 이름 아래로 이동 함수
-def move_class_down(day, index):
-    if index < len(timetable_data[day])-1:
-        timetable_data[day][index], timetable_data[day][index+1] = timetable_data[day][index+1], timetable_data[day][index]
-        save_timetable()
-        create_input_widgets(day)
 
 # 동작 확인용 함수
 def show_timetable(day):
