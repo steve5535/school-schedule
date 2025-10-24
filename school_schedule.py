@@ -29,15 +29,15 @@ def load_timetable():
             timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
 # 입력창 클릭시 플레이홀더를 사라지게 하는 함수
-def on_focus_in(event, entry):
-    if entry.get() == "수업 이름":
+def on_focus_in(event, entry, placeholder):
+    if entry.get() == placeholder:
         entry.delete(0, tk.END)
         entry.configure(foreground="black")
 
 # 입력창이 비어 있을시 플레이홀더 문구 표시 함수
-def on_focus_out(event, entry):
+def on_focus_out(event, entry, placeholder):
     if not entry.get():
-        entry.insert(0, "수업 이름")
+        entry.insert(0, placeholder)
         entry.configure(foreground="gray")
 
 # 입력창+버튼 생성 함수
@@ -61,8 +61,8 @@ def create_input_widgets(day):
     entry.insert(0, "수업 이름") # 기본 문구
     entry.configure(foreground="gray") # 글씨 색 연하게
     
-    entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry))
-    entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry))
+    entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry, "수업 이름"))
+    entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry, "수업 이름"))
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
@@ -140,6 +140,13 @@ def open_item_window(day, class_data):
     # Enter키로 추가
     entry.bind('<Return>', lambda event: add_item(day, class_data, entry, item_frame))
     
+    # 플레이홀더 텍스트 추가
+    entry.insert(0, "준비물")
+    entry.configure(foreground="gray")
+    
+    entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry, "준비물"))
+    entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry, "준비물"))
+    
     # 창 크기에 따라 크기 변경
     win.columnconfigure(0, weight=3)
     win.columnconfigure(1, weight=1)
@@ -155,6 +162,8 @@ def add_item(day, cls, entry_widget, item_frame):
         save_timetable()
         refresh_item_list(day, cls, item_frame)
         entry_widget.delete(0, tk.END)
+    #플레이홀더 텍스트 색 복구 방지
+    entry_widget.configure(foreground="black")
 
 # 준비물  삭제 함수
 def delete_item(day, cls, item_name, item_frame):
