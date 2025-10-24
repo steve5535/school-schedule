@@ -269,6 +269,14 @@ container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
 container.grid_rowconfigure(0, weight=1)
 container.grid_columnconfigure(0, weight=1)
 
+# Canvas 위젯 생성
+canvas = tk.Canvas(container)
+canvas.grid(row=0, column=0, sticky="nsew")
+
+# Scrollbar 위젯 생성
+scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+scrollbar.grid(row=0, column=1, sticky="ns")
+
 # 입력 프레임 생성
 input_frame = ttk.Frame(tab_timetable) # tab_timetable 안에 Frame 생성
 input_frame.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew") # 세팅
@@ -276,6 +284,5 @@ input_frame.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew") # 세팅
 # 창 크기에 따라 가로로 늘어가게 함
 for i in range(len(days)):
     tab_timetable.columnconfigure(i, weight=1)
-
 
 root.mainloop() # 메인 루프
