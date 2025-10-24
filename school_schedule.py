@@ -263,6 +263,12 @@ for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
     button = ttk.Button(tab_timetable, text=day, command=lambda d=day: show_timetable(d)) # 버튼 생성
     button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
 
+# 스크롤 프레임 생성
+container = ttk.Frame(tab_timetable)
+container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
+container.grid_rowconfigure(0, weight=1)
+container.grid_columnconfigure(0, weight=1)
+
 # 입력 프레임 생성
 input_frame = ttk.Frame(tab_timetable) # tab_timetable 안에 Frame 생성
 input_frame.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew") # 세팅
