@@ -277,9 +277,22 @@ canvas.grid(row=0, column=0, sticky="nsew")
 scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
 scrollbar.grid(row=0, column=1, sticky="ns")
 
-# 입력 프레임 생성
-input_frame = ttk.Frame(tab_timetable) # tab_timetable 안에 Frame 생성
-input_frame.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew") # 세팅
+# Canvas와 Scrollbar 연결
+canvas.configure(yscrollcommand=scrollbar.set)
+
+# 위젯들이 들어갈 프레임
+scrollable_frame = ttk.Frame(canvas)
+
+# scrollable_frame을 Canvas에 추가
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+# scrollable_frame의 크기 변경될 때 스크롤 영역 재설정 함수
+def on_frame_configue(evenet):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+scrollable_frame.bind("<Configure>", on_frame_configue)
+
+input_frame = scrollable_frame
 
 # 창 크기에 따라 가로로 늘어가게 함
 for i in range(len(days)):
