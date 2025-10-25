@@ -13,6 +13,35 @@ ITEM_HEIGHT = 200 # 준비물 창 세로 길이
 # 요일별 수업 딕셔너리
 timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
+# 스크롤 가능한 프레임 생성 함수
+def create_scrollable_frame(parent):
+    container = ttk.Frame(parent)
+    
+    # Canvas와 Scrollbar 생성
+    canvas = tk.Canvas(container)
+    scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+    
+    # 위젯이 올라갈 스크롤 프레임
+    scrollable_frame = ttk.Frame(canvas)
+    
+    # scrollable_frame을 Canvas 안에 배치
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    
+    # 스크롤 영역 설정 함수
+    def on_frame_configure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    
+    scrollable_frame.bind("<Configure>", on_frame_configure)
+    
+    # 위젯 배치
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    # container와 scrollable_frame을 반환
+    return container, scrollable_frame
+
+
 # 저장용 함수
 def save_timetable():
     with open("timetable.json", "w", encoding="utf-8") as f:
@@ -263,36 +292,9 @@ for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
     button = ttk.Button(tab_timetable, text=day, command=lambda d=day: show_timetable(d)) # 버튼 생성
     button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
 
-# 스크롤 프레임 생성
-container = ttk.Frame(tab_timetable)
-container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
-container.grid_rowconfigure(0, weight=1)
-container.grid_columnconfigure(0, weight=1)
-
-# Canvas 위젯 생성
-canvas = tk.Canvas(container)
-canvas.grid(row=0, column=0, sticky="nsew")
-
-# Scrollbar 위젯 생성
-scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-scrollbar.grid(row=0, column=1, sticky="ns")
-
-# Canvas와 Scrollbar 연결
-canvas.configure(yscrollcommand=scrollbar.set)
-
-# 위젯들이 들어갈 프레임
-scrollable_frame = ttk.Frame(canvas)
-
-# scrollable_frame을 Canvas에 추가
-canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-
-# scrollable_frame의 크기 변경될 때 스크롤 영역 재설정 함수
-def on_frame_configue(evenet):
-    canvas.configure(scrollregion=canvas.bbox("all"))
-
-scrollable_frame.bind("<Configure>", on_frame_configue)
-
-input_frame = scrollable_frame
+# 스크롤 가능 영역 생성 함수 호출
+scroll_container, input_frame = create_scrollable_frame(tab_timetable)
+scroll_container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
 
 # 창 크기에 따라 가로로 늘어가게 함
 for i in range(len(days)):
