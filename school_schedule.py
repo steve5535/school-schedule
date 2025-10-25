@@ -123,7 +123,7 @@ def create_input_widgets(day):
         edit_btn.grid(row=i+1, column=5, sticky="nsew", padx=5)
     
     # 창 크기에 따라 버튼 늘어나게 함
-    for i in range(5):
+    for i in range(6):
         input_frame.columnconfigure(i, weight=1)
 
     return entry
