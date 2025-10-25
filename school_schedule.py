@@ -213,7 +213,24 @@ def open_item_window(day, class_data):
     
     win = tk.Toplevel(root)
     win.title(f"{class_name} 준비물")
-    win.geometry(f"{ITEM_WIDTH}x{ITEM_HEIGHT}")
+    
+    # root창 크기 갱신
+    root.update_idletasks()
+    
+    # root창 위치 및 크기 정보 가져오기
+    root_x = root.winfo_x()
+    root_y = root.winfo_y()
+    root_width = root.winfo_width()
+    root_height = root.winfo_height()
+    
+    # 중앙 위치 계산
+    center_x = root_x + (root_width // 2) - (ITEM_WIDTH // 2)
+    center_y = root_y + (root_height // 2) - (ITEM_HEIGHT // 2)
+    
+    # 중앙에 준비물 창 표시
+    win.geometry(f"{ITEM_WIDTH}x{ITEM_HEIGHT}+{center_x}+{center_y}")
+    
+    # 창 중복 문제 막기
     item_window[class_name] = win
     
     # 상단 프레임
