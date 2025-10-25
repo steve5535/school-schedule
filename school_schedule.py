@@ -17,16 +17,24 @@ timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 def create_scrollable_frame(parent):
     container = ttk.Frame(parent)
     
+    # 컨테이너의 크기 조절
+    container.grid_rowconfigure(0, weight=1)
+    container.grid_columnconfigure(0, weight=1)
+    
     # Canvas와 Scrollbar 생성
     canvas = tk.Canvas(container)
     scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
     canvas.configure(yscrollcommand=scrollbar.set)
     
+    # Canvas와 Scrollbar 배치
+    canvas.grid(row=0, column=0, sticky="nsew")
+    scrollbar.grid(row=0, column=1, sticky="ns")
+    
     # 위젯이 올라갈 스크롤 프레임
     scrollable_frame = ttk.Frame(canvas)
     
-    # scrollable_frame을 Canvas 안에 배치
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    # ID 저장
+    frame_id = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     
     # 스크롤 영역 설정 함수
     def on_frame_configure(event):
@@ -34,13 +42,14 @@ def create_scrollable_frame(parent):
     
     scrollable_frame.bind("<Configure>", on_frame_configure)
     
-    # 위젯 배치
-    canvas.pack(side="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
+    # Canvas 위젯 너비 변경 감지 함수
+    def on_canvas_resize(event):
+        canvas.itemconfig(frame_id, width=event.width)
+    
+    canvas.bind('<Configure>', on_canvas_resize)
     
     # container와 scrollable_frame을 반환
     return container, scrollable_frame
-
 
 # 저장용 함수
 def save_timetable():
@@ -234,6 +243,12 @@ def open_item_window(day, class_data):
     win.rowconfigure(1, weight=1)
     
     refresh_item_list(day, class_data, item_frame)
+    
+    # 최소 크기 설정
+    win.update()
+    min_w = win.winfo_width()
+    min_h = win.winfo_height()
+    win.minsize(min_w, min_h)
 
 # 준비물 추가 함수
 def add_item(day, cls, entry_widget, item_frame):
