@@ -201,17 +201,23 @@ def open_item_window(day, class_data):
     win.geometry(f"{ITEM_WIDTH}x{ITEM_HEIGHT}")
     item_window[class_name] = win
     
-    # 준비물 목록 Frame
-    item_frame = ttk.Frame(win)
-    item_frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
+    # 상단 프레임
+    top_frame = ttk.Frame(win)
+    top_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
+    
+    # 스크롤 가능 함수 호출
+    scroll_container, item_frame = create_scrollable_frame(win)
+    
+    # 스크롤 기능 win에 배치
+    scroll_container.grid(row=1, column=0, columnspan=2, padx=5, pady=(0,5), sticky="nsew")
     
     # 준비물 입력 창
-    entry = ttk.Entry(win)
-    entry.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+    entry = ttk.Entry(top_frame)
+    entry.pack(side=tk.LEFT, expand=True, fill="x")
     
     # 추가 버튼
-    add_btn = ttk.Button(win, text="추가", command=lambda: add_item(day, class_data, entry, item_frame))
-    add_btn.grid(row=0, column=1, padx=5, pady=5)
+    add_btn = ttk.Button(top_frame, text="추가", command=lambda: add_item(day, class_data, entry, item_frame))
+    add_btn.pack(side=tk.RIGHT, padx=(5, 0))
     
     # Enter키로 추가
     entry.bind('<Return>', lambda event: add_item(day, class_data, entry, item_frame))
@@ -224,8 +230,7 @@ def open_item_window(day, class_data):
     entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry, "준비물"))
     
     # 창 크기에 따라 크기 변경
-    win.columnconfigure(0, weight=3)
-    win.columnconfigure(1, weight=1)
+    win.columnconfigure(0, weight=1)
     win.rowconfigure(1, weight=1)
     
     refresh_item_list(day, class_data, item_frame)
