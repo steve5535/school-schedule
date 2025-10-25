@@ -42,6 +42,12 @@ def create_scrollable_frame(parent):
     
     scrollable_frame.bind("<Configure>", on_frame_configure)
     
+    # 마우스 휠로 스크롤하는 함수
+    def _on_mousewheel(event):
+        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    canvas.bind_all("<MouseWheel>", _on_mousewheel)
+    
     # Canvas 위젯 너비 변경 감지 함수
     def on_canvas_resize(event):
         canvas.itemconfig(frame_id, width=event.width)
