@@ -138,9 +138,9 @@ def create_input_widgets(day):
 def add_class(day, class_name=None, event=None):
     if class_name is None:
         entry_widget = input_frame.winfo_children()[0]
-        class_name = entry_widget.get() #class_name 변수에 저장
+        class_name = entry_widget.get() # class_name 변수에 저장
     
-    if class_name.strip(): # 입력값이 비어있지 않을 때
+    if class_name.strip() and class_name != "수업 이름": # 입력값이 비어있지 않을 때
         timetable_data[day].append({"name": class_name, "items": []}) # 딕셔너리에 저장
         save_timetable() # 저장
     
@@ -238,8 +238,8 @@ def open_item_window(day, class_data):
     entry.bind('<Return>', lambda event: add_item(day, class_data, entry, item_frame))
     
     # 플레이홀더 텍스트 추가
-    entry.insert(0, "준비물")
-    entry.configure(foreground="gray")
+    entry.insert(0, "준비물") # 기본 문구
+    entry.configure(foreground="gray") # 글씨 색 연하게
     
     entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry, "준비물"))
     entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry, "준비물"))
@@ -259,13 +259,14 @@ def open_item_window(day, class_data):
 # 준비물 추가 함수
 def add_item(day, cls, entry_widget, item_frame):
     item_name = entry_widget.get()
-    if item_name.strip():
-        cls["items"].append(item_name)
-        save_timetable()
+    if item_name.strip() and item_name != "준비물": # 입력값이 비어있지 않을 때
+        cls["items"].append(item_name) # 딕셔너리에 추가
+        save_timetable() # 저장
         refresh_item_list(day, cls, item_frame)
         entry_widget.delete(0, tk.END)
-    #플레이홀더 텍스트 색 복구 방지
-    entry_widget.configure(foreground="black")
+        
+        #플레이홀더 텍스트 색 복구 방지
+        entry_widget.configure(foreground="black")
 
 # 준비물  삭제 함수
 def delete_item(day, cls, item_name, item_frame):
