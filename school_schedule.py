@@ -110,7 +110,7 @@ def create_input_widgets(day):
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
-        lbl = ttk.Label(input_frame, text=cls["name"])
+        lbl = ttk.Label(input_frame, text=f"{cls['name']} ——— 준비물 : {len(cls['items'])}개")
         lbl.grid(row=i+1, column=0, sticky="nsew", padx=5)
         # 준비물 추가 버튼
         item_btn = ttk.Button(input_frame, text="준비물", command=lambda c=cls: open_item_window(day, c))
@@ -202,7 +202,7 @@ def move_class_down(day, index):
 
 item_window = {}
 
-# 준비물 입력창 함수
+# 준비물 창 함수
 def open_item_window(day, class_data):
     class_name = class_data["name"]
     
@@ -273,6 +273,12 @@ def open_item_window(day, class_data):
     min_h = win.winfo_height()
     win.minsize(min_w, min_h)
 
+# 준비물 창 닫을 때 정리 함수
+def close_item_window(class_name, win):
+    if class_name in item_window:
+        del item_window[class_name]
+    win.destroy()
+
 # 준비물 추가 함수
 def add_item(day, cls, entry_widget, item_frame):
     item_name = entry_widget.get()
@@ -284,12 +290,18 @@ def add_item(day, cls, entry_widget, item_frame):
         
         #플레이홀더 텍스트 색 복구 방지
         entry_widget.configure(foreground="black")
+        
+        # 함수 호출(UI 갱신)
+        create_input_widgets(day)
 
 # 준비물  삭제 함수
 def delete_item(day, cls, item_name, item_frame):
     cls["items"].remove(item_name)
     save_timetable()
     refresh_item_list(day, cls, item_frame)
+    
+    # 함수 호출(UI 갱신)
+    create_input_widgets(day)
 
 # 준비물 목록 갱신 함수
 def refresh_item_list(day, cls, item_frame):
