@@ -110,7 +110,7 @@ def create_input_widgets(day):
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
-        lbl = ttk.Label(input_frame, text=f"{cls['name']} ——— 준비물 : {len(cls['items'])}개")
+        lbl = ttk.Label(input_frame, text=f"{cls['name']} {'—' * (5 - len(cls['name']))} 준비물 : {len(cls['items'])}개")
         lbl.grid(row=i+1, column=0, sticky="nsew", padx=5)
         # 준비물 추가 버튼
         item_btn = ttk.Button(input_frame, text="준비물", command=lambda c=cls: open_item_window(day, c))
