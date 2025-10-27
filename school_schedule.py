@@ -10,6 +10,10 @@ WINDOW_HEIGHT = 400 # 창 세로 길이
 ITEM_WIDTH = 300 # 준비물 창 가로 길이
 ITEM_HEIGHT = 200 # 준비물 창 세로 길이
 
+BUTTON_SIZE = 5 # 버튼 크기
+BUTTON_X_BLANK = 1 # 버튼 좌우 여백
+BUTTON_Y_BLANK = 1 # 버튼 위아래 여백
+
 # 요일별 수업 딕셔너리
 timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
@@ -40,11 +44,12 @@ def create_scrollable_frame(parent):
     # ID 저장
     frame_id = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     
-    # 스크롤 영역 설정 함수
+    # 스크롤 영역 자동 갱신
     def on_frame_configure(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfig(frame_id, width=max(event.width, scrollable_frame.winfo_reqwidth()))
     
-    scrollable_frame.bind("<Configure>", on_frame_configure)
+    canvas.bind("<Configure>", on_frame_configure)
     
     # 마우스 휠로 스크롤하는 함수
     def _on_mousewheel(event):
@@ -58,12 +63,6 @@ def create_scrollable_frame(parent):
     # Linux 지원
     canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))
     canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(-1, "units"))
-    
-    # Canvas 위젯 너비 변경 감지 함수
-    def on_canvas_resize(event):
-        canvas.itemconfig(frame_id, width=event.width)
-    
-    canvas.bind('<Configure>', on_canvas_resize)
     
     # container와 scrollable_frame을 반환
     return container, scrollable_frame
@@ -112,39 +111,33 @@ def create_input_widgets(day):
     
     # 추가 버튼 생성
     add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
-    add_btn.grid(row=0, column=1, sticky="nsew",padx=5, pady=5)
+    add_btn.grid(row=0, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
     # 플레이스홀더 텍스트 추가
     entry.insert(0, "수업 이름") # 기본 문구
     entry.configure(foreground="gray") # 글씨 색 연하게
-    
     entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry, "수업 이름"))
     entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry, "수업 이름"))
     
     # 저장된 수업들을 Label로 표시
     for i, cls in enumerate(timetable_data[day]):
         lbl = ttk.Label(input_frame, text=f"{cls['name']} {'—' * (5 - len(cls['name']))} 준비물 : {len(cls['items'])}개")
-        lbl.grid(row=i+1, column=0, sticky="nsew", padx=5)
+        lbl.grid(row=i+1, column=0, sticky="ew", padx=10, pady=1)
         # 준비물 추가 버튼
-        item_btn = ttk.Button(input_frame, text="준비물", command=lambda c=cls: open_item_window(day, c))
-        item_btn.grid(row=i+1, column=1, sticky="nsew", padx=5)
+        item_btn = ttk.Button(input_frame, text="준비물", width=BUTTON_SIZE, command=lambda c=cls: open_item_window(day, c))
+        item_btn.grid(row=i+1, column=1, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
         # 삭제 버튼
-        del_btn = ttk.Button(input_frame, text="삭제", width=3, command=lambda c=cls: delete_class(day,c))
-        del_btn.grid(row=i+1, column=2, sticky="nsew", padx=5)
+        del_btn = ttk.Button(input_frame, text="삭제", width=BUTTON_SIZE, command=lambda c=cls: delete_class(day,c))
+        del_btn.grid(row=i+1, column=2, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
         # 위로 이동 버튼
-        up_btn = ttk.Button(input_frame, text="↑", width=3, command=lambda i=i: move_class_up(day,i))
-        up_btn.grid(row=i+1, column=3, sticky="nsew", padx=5)
+        up_btn = ttk.Button(input_frame, text="↑", width=BUTTON_SIZE, command=lambda i=i: move_class_up(day,i))
+        up_btn.grid(row=i+1, column=3, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
         # 아래로 이동 버튼
-        down_btn = ttk.Button(input_frame, text="↓", width=3, command=lambda i=i: move_class_down(day,i))
-        down_btn.grid(row=i+1, column=4, sticky="nsew", padx=5)
+        down_btn = ttk.Button(input_frame, text="↓", width=BUTTON_SIZE, command=lambda i=i: move_class_down(day,i))
+        down_btn.grid(row=i+1, column=4, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
         # 수정 버튼
-        edit_btn = ttk.Button(input_frame, text="수정", width=3, command=lambda c=cls: edit_class(day, c))
-        edit_btn.grid(row=i+1, column=5, sticky="nsew", padx=5)
-    
-    # 창 크기에 따라 버튼 늘어나게 함
-    for i in range(6):
-        input_frame.columnconfigure(i, weight=1)
-
+        edit_btn = ttk.Button(input_frame, text="수정", width=BUTTON_SIZE, command=lambda c=cls: edit_class(day, c))
+        edit_btn.grid(row=i+1, column=5, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
     return entry
 
 # 수업 이름 추가 함수
