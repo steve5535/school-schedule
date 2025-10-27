@@ -44,9 +44,16 @@ def create_scrollable_frame(parent):
     
     # 마우스 휠로 스크롤하는 함수
     def _on_mousewheel(event):
-        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        if event.delta:
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        elif event.num == 4: # Linux 스크롤 업
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5: # Linux 스크롤 다운
+            canvas.yview_scroll(1, "units")
     
     canvas.bind_all("<MouseWheel>", _on_mousewheel)
+    canvas.bind_all("<Button-4>", _on_mousewheel)
+    canvas.bind_all("<Button-5>", _on_mousewheel)
     
     # Canvas 위젯 너비 변경 감지 함수
     def on_canvas_resize(event):
