@@ -23,12 +23,16 @@ def create_scrollable_frame(parent):
     
     # Canvas와 Scrollbar 생성
     canvas = tk.Canvas(container)
-    scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-    canvas.configure(yscrollcommand=scrollbar.set)
+    scrollbar_y = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+    scrollbar_x = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
+    
+    # Canvas에 Scrollbar 연결
+    canvas.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
     
     # Canvas와 Scrollbar 배치
     canvas.grid(row=0, column=0, sticky="nsew")
-    scrollbar.grid(row=0, column=1, sticky="ns")
+    scrollbar_y.grid(row=0, column=1, sticky="ns")
+    scrollbar_x.grid(row=1, column=0, sticky="ew")
     
     # 위젯이 올라갈 스크롤 프레임
     scrollable_frame = ttk.Frame(canvas)
@@ -44,16 +48,16 @@ def create_scrollable_frame(parent):
     
     # 마우스 휠로 스크롤하는 함수
     def _on_mousewheel(event):
-        if event.delta:
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        elif event.num == 4: # Linux 스크롤 업
-            canvas.yview_scroll(-1, "units")
-        elif event.num == 5: # Linux 스크롤 다운
-            canvas.yview_scroll(1, "units")
+        if event.state & 0x1:
+            canvas.xview_scroll(int(-1*event.delta/120), "units")
+        else:
+            canvas.yview_scroll(int(-1*event.delta/120), "units")
     
     canvas.bind_all("<MouseWheel>", _on_mousewheel)
-    canvas.bind_all("<Button-4>", _on_mousewheel)
-    canvas.bind_all("<Button-5>", _on_mousewheel)
+    
+    # Linux 지원
+    canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))
+    canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(-1, "units"))
     
     # Canvas 위젯 너비 변경 감지 함수
     def on_canvas_resize(event):
