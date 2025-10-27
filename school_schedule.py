@@ -66,8 +66,10 @@ def create_scrollable_frame(parent):
 
 # 저장용 함수
 def save_timetable():
+    tmp_file = "timetable_tem.json"
     with open("timetable.json", "w", encoding="utf-8") as f:
         json.dump(timetable_data, f, ensure_ascii=False, indent=4)
+    os.replace(tmp_file, "timetable.json")
 
 # 불러오기 함수
 def load_timetable():
