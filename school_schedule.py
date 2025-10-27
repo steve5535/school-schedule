@@ -364,5 +364,6 @@ scroll_container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
 # 창 크기에 따라 가로로 늘어가게 함
 for i in range(len(days)):
     tab_timetable.columnconfigure(i, weight=1)
+    tab_timetable.rowconfigure(1, weight=1)
 
 root.mainloop() # 메인 루프
