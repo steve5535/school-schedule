@@ -78,7 +78,7 @@ def load_timetable():
         try:
             with open("timetable.json", "r", encoding="utf-8") as f:
                 timetable_data = json.load(f)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, OSError):
             timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
 # 입력창 클릭시 플레이홀더를 사라지게 하는 함수
