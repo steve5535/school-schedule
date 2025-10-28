@@ -48,8 +48,9 @@ def create_scrollable_frame(parent):
     def on_frame_configure(event):
         # scrollregion 갱신
         canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfig(frame_id, width=scrollable_frame.winfo_reqwidth())
         
-        # 현재 프레임 캔버스의 실제 크기 비교
+        # 현재 프레임 캔버스의 실제 크기 비교 변수
         frame_width = scrollable_frame.winfo_reqwidth()
         frame_height = scrollable_frame.winfo_reqheight()
         canvas_width = canvas.winfo_width()
@@ -57,13 +58,13 @@ def create_scrollable_frame(parent):
         
         # 수평 Scrollbar 보이기/숨기기
         if frame_width > canvas_width:
-            scrollbar_x.grid()
+            scrollbar_x.grid(row=1, column=0, sticky="ew")
         else:
             scrollbar_x.grid_remove()
         
         # 수직 Scrollbar 보이기/숨기기
         if frame_height > canvas_height:
-            scrollbar_y.grid()
+            scrollbar_y.grid(row=0, column=1, sticky="ns")
         else:
             scrollbar_y.grid_remove()
         
@@ -74,15 +75,24 @@ def create_scrollable_frame(parent):
     
     # 마우스 휠로 스크롤하는 함수
     def _on_mousewheel(event):
+        # 현재 프레임 캔버스의 실제 크기 비교 변수
+        frame_width = scrollable_frame.winfo_reqwidth()
+        frame_height = scrollable_frame.winfo_reqheight()
+        canvas_width = canvas.winfo_width()
+        canvas_height = canvas.winfo_height()
         if hasattr(event, 'delta'): # Windows
             if event.state & 0x1: # Shift 키 눌렀을 때
-                canvas.xview_scroll(int(-1 * event.delta / 120), "units") # 가로 스크롤
+                if canvas.bbox("all")[2] > canvas.winfo_width(): # 전체 폭 > 캔버스 폭
+                    canvas.xview_scroll(int(-1 * event.delta / 120), "units") # 가로 스크롤
             else: # 그냥 휠일때
-                canvas.yview_scroll(int(-1 * event.delta / 120), "units") # 세로 스크롤
+                if canvas.bbox("all")[3] > canvas.winfo_height(): # 전체 높이 > 캔버스 높이
+                    canvas.yview_scroll(int(-1 * event.delta / 120), "units") # 세로 스크롤
         elif event.num == 4: # Linux, 위로
-            canvas.yview_scroll(-1, "units")
+            if frame_height > canvas_height:
+                canvas.yview_scroll(-1, "units")
         elif event.num == 5: # Linux, 아래로
-            canvas.yview_scroll(1, "units")
+            if frame_height > canvas_height:
+                canvas.yview_scroll(1, "units")
     
     # 캔버스에 마우스 들어왔을 때 바인딩
     def bind_mousewheel(event):
@@ -92,15 +102,15 @@ def create_scrollable_frame(parent):
     
     # 캔버스에서 마우스 나갔을 때 언바인딩
     def unbind_mousewheel(event):
-        canvas.unbind_all("<MouseWheel>")
-        canvas.unbind_all("<Button-4>")
-        canvas.unbind_all("<Button-5>")
+        canvas.unbind("<MouseWheel>")
+        canvas.unbind("<Button-4>")
+        canvas.unbind("<Button-5>")
     
     canvas.bind("<Enter>", bind_mousewheel)
     canvas.bind("<Leave>", unbind_mousewheel)
     
     # container와 scrollable_frame을 반환
-    return container, scrollable_frame
+    return container, scrollable_frame, canvas
 
 # 저장용 함수
 def save_timetable():
@@ -279,7 +289,7 @@ def open_item_window(day, class_data):
     top_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
     
     # 스크롤 가능 함수 호출
-    scroll_container, item_frame = create_scrollable_frame(win)
+    scroll_container, item_frame, item_canvas = create_scrollable_frame(win)
     
     # 스크롤 기능 win에 배치
     scroll_container.grid(row=1, column=0, columnspan=2, padx=5, pady=(0,5), sticky="nsew")
@@ -289,11 +299,11 @@ def open_item_window(day, class_data):
     entry.pack(side=tk.LEFT, expand=True, fill="x")
     
     # 추가 버튼
-    add_btn = ttk.Button(top_frame, text="추가", command=lambda: add_item(day, class_data, entry, item_frame))
+    add_btn = ttk.Button(top_frame, text="추가", command=lambda: add_item(day, class_data, entry, item_frame, item_canvas))
     add_btn.pack(side=tk.RIGHT, padx=(5, 0))
     
     # Enter키로 추가
-    entry.bind('<Return>', lambda event: add_item(day, class_data, entry, item_frame))
+    entry.bind('<Return>', lambda event: add_item(day, class_data, entry, item_frame, item_canvas))
     
     # 플레이홀더 텍스트 추가
     entry.insert(0, "준비물") # 기본 문구
@@ -306,7 +316,7 @@ def open_item_window(day, class_data):
     win.columnconfigure(0, weight=1)
     win.rowconfigure(1, weight=1)
     
-    refresh_item_list(day, class_data, item_frame)
+    refresh_item_list(day, class_data, item_frame, item_canvas)
     
     # 최소 크기 설정
     win.update()
@@ -321,12 +331,12 @@ def close_item_window(class_name, win):
     win.destroy()
 
 # 준비물 추가 함수
-def add_item(day, cls, entry_widget, item_frame):
+def add_item(day, cls, entry_widget, item_frame, item_canvas):
     item_name = entry_widget.get()
     if item_name.strip() and item_name != "준비물": # 입력값이 비어있지 않을 때
         cls["items"].append(item_name) # 딕셔너리에 추가
         save_timetable() # 저장
-        refresh_item_list(day, cls, item_frame)
+        refresh_item_list(day, cls, item_frame, item_canvas)
         entry_widget.delete(0, tk.END)
         
         #플레이홀더 텍스트 색 복구 방지
@@ -336,16 +346,16 @@ def add_item(day, cls, entry_widget, item_frame):
         create_input_widgets(day)
 
 # 준비물  삭제 함수
-def delete_item(day, cls, item_name, item_frame):
+def delete_item(day, cls, item_name, item_frame, item_canvas):
     cls["items"].remove(item_name)
     save_timetable()
-    refresh_item_list(day, cls, item_frame)
+    refresh_item_list(day, cls, item_frame, item_canvas)
     
     # 함수 호출(UI 갱신)
     create_input_widgets(day)
 
 # 준비물 목록 갱신 함수
-def refresh_item_list(day, cls, item_frame):
+def refresh_item_list(day, cls, item_frame, item_canvas):
     # 기존 위젯 제거
     for widget in item_frame.winfo_children():
         widget.destroy()
@@ -355,8 +365,11 @@ def refresh_item_list(day, cls, item_frame):
         lbl = ttk.Label(item_frame, text=item)
         lbl.grid(row=i, column=0, sticky="w", padx=5)
         
-        del_btn = ttk.Button(item_frame, text="삭제", command=lambda it=item: delete_item(day, cls, it, item_frame))
+        del_btn = ttk.Button(item_frame, text="삭제", command=lambda it=item: delete_item(day, cls, it, item_frame, item_canvas))
         del_btn.grid(row=i, column=1, padx=5)
+    
+    # 스크롤 영역 갱신
+    item_canvas.configure(scrollregion=item_canvas.bbox("all"))
 
 # 동작 확인용 함수
 def show_timetable(day):
@@ -390,7 +403,7 @@ for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
     button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
 
 # 스크롤 가능 영역 생성 함수 호출
-scroll_container, input_frame = create_scrollable_frame(tab_timetable)
+scroll_container, input_frame, input_canvas = create_scrollable_frame(tab_timetable)
 scroll_container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
 
 # 창 크기에 따라 가로로 늘어가게 함
