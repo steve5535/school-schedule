@@ -46,7 +46,28 @@ def create_scrollable_frame(parent):
     
     # 스크롤 영역 자동 갱신
     def on_frame_configure(event):
+        # scrollregion 갱신
         canvas.configure(scrollregion=canvas.bbox("all"))
+        
+        # 현재 프레임 캔버스의 실제 크기 비교
+        frame_width = scrollable_frame.winfo_reqwidth()
+        frame_height = scrollable_frame.winfo_reqheight()
+        canvas_width = canvas.winfo_width()
+        canvas_height = canvas.winfo_height()
+        
+        # 수평 Scrollbar 보이기/숨기기
+        if frame_width > canvas_width:
+            scrollbar_x.grid()
+        else:
+            scrollbar_x.grid_remove()
+        
+        # 수직 Scrollbar 보이기/숨기기
+        if frame_height > canvas_height:
+            scrollbar_y.grid()
+        else:
+            scrollbar_y.grid_remove()
+        
+        # 캔버스 내부 프레임 폭 자동 조절
         canvas.itemconfig(frame_id, width=max(event.width, scrollable_frame.winfo_reqwidth()))
     
     canvas.bind("<Configure>", on_frame_configure)
