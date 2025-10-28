@@ -44,41 +44,46 @@ def create_scrollable_frame(parent):
     # ID 저장
     frame_id = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     
+    def update_scrollregion():
+            # 모든 위젯의 실제 크기 반영
+            scrollable_frame.update_idletasks()
+            
+            # scrollregion 갱신 (전체 영역)
+            bbox = canvas.bbox("all")
+            if bbox: # bbox가 None일 때 오류 방지
+                canvas.configure(scrollregion=bbox)
+            
+            # 현재 프레임 캔버스의 실제 크기 비교 변수
+            frame_width = scrollable_frame.winfo_reqwidth()
+            frame_height = scrollable_frame.winfo_reqheight()
+            canvas_width = canvas.winfo_width()
+            canvas_height = canvas.winfo_height()
+            
+            # 수평 Scrollbar 보이기/숨기기
+            if frame_width > canvas_width:
+                scrollbar_x.grid(row=1, column=0, sticky="ew")
+            else:
+                scrollbar_x.grid_remove()
+            
+            # 수직 Scrollbar 보이기/숨기기
+            if frame_height > canvas_height:
+                scrollbar_y.grid(row=0, column=1, sticky="ns")
+            else:
+                scrollbar_y.grid_remove()
+            
+            # 캔버스 내부 프레임 폭 자동 조절
+            canvas.itemconfig(frame_id, width=max(canvas_width, scrollable_frame.winfo_reqwidth()))
+    
     # 스크롤 영역 자동 갱신
-    def on_frame_configure(event):
-        # scrollregion 갱신
-        canvas.configure(scrollregion=canvas.bbox("all"))
-        canvas.itemconfig(frame_id, width=scrollable_frame.winfo_reqwidth())
-        
-        # 현재 프레임 캔버스의 실제 크기 비교 변수
-        frame_width = scrollable_frame.winfo_reqwidth()
-        frame_height = scrollable_frame.winfo_reqheight()
-        canvas_width = canvas.winfo_width()
-        canvas_height = canvas.winfo_height()
-        
-        # 수평 Scrollbar 보이기/숨기기
-        if frame_width > canvas_width:
-            scrollbar_x.grid(row=1, column=0, sticky="ew")
-        else:
-            scrollbar_x.grid_remove()
-        
-        # 수직 Scrollbar 보이기/숨기기
-        if frame_height > canvas_height:
-            scrollbar_y.grid(row=0, column=1, sticky="ns")
-        else:
-            scrollbar_y.grid_remove()
-        
-        # 캔버스 내부 프레임 폭 자동 조절
-        canvas.itemconfig(frame_id, width=max(event.width, scrollable_frame.winfo_reqwidth()))
+    def on_frame_configure(event=None):
+        canvas.after_idle(update_scrollregion)
     
     canvas.bind("<Configure>", on_frame_configure)
     
     # 마우스 휠로 스크롤하는 함수
     def _on_mousewheel(event):
         # 현재 프레임 캔버스의 실제 크기 비교 변수
-        frame_width = scrollable_frame.winfo_reqwidth()
         frame_height = scrollable_frame.winfo_reqheight()
-        canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
         if hasattr(event, 'delta'): # Windows
             if event.state & 0x1: # Shift 키 눌렀을 때
@@ -183,6 +188,15 @@ def create_input_widgets(day):
         # 수정 버튼
         edit_btn = ttk.Button(input_frame, text="수정", width=BUTTON_SIZE, command=lambda c=cls: edit_class(day, c))
         edit_btn.grid(row=i+1, column=5, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+    
+    input_frame.update_idletasks()
+    input_canvas.configure(scrollregion=input_canvas.bbox("all"))
+    
+    try:
+        input_canvas.after_idle(lambda: input_canvas.configure(scrollregion=input_canvas.bbox("all")))
+    except NameError:
+        pass
+    
     return entry
 
 # 수업 이름 추가 함수
@@ -369,7 +383,7 @@ def refresh_item_list(day, cls, item_frame, item_canvas):
         del_btn.grid(row=i, column=1, padx=5)
     
     # 스크롤 영역 갱신
-    item_canvas.configure(scrollregion=item_canvas.bbox("all"))
+    item_canvas.after_idle(lambda: item_canvas.configure(scrollregion=item_canvas.bbox("all")))
 
 # 동작 확인용 함수
 def show_timetable(day):
