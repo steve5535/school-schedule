@@ -74,16 +74,30 @@ def create_scrollable_frame(parent):
     
     # 마우스 휠로 스크롤하는 함수
     def _on_mousewheel(event):
-        if event.state & 0x1:
-            canvas.xview_scroll(int(-1*event.delta/120), "units")
-        else:
-            canvas.yview_scroll(int(-1*event.delta/120), "units")
+        if hasattr(event, 'delta'): # Windows
+            if event.state & 0x1: # Shift 키 눌렀을 때
+                canvas.xview_scroll(int(-1 * event.delta / 120), "units") # 가로 스크롤
+            else: # 그냥 휠일때
+                canvas.yview_scroll(int(-1 * event.delta / 120), "units") # 세로 스크롤
+        elif event.num == 4: # Linux, 위로
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5: # Linux, 아래로
+            canvas.yview_scroll(1, "units")
     
-    canvas.bind_all("<MouseWheel>", _on_mousewheel)
+    # 캔버스에 마우스 들어왔을 때 바인딩
+    def bind_mousewheel(event):
+        canvas.bind_all("<MouseWheel>", _on_mousewheel) # Windows
+        canvas.bind_all("<Button-4>", _on_mousewheel) # Linux 위로
+        canvas.bind_all("<Button-5>", _on_mousewheel) # Linux 아래로
     
-    # Linux 지원
-    canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))
-    canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(-1, "units"))
+    # 캔버스에서 마우스 나갔을 때 언바인딩
+    def unbind_mousewheel(event):
+        canvas.unbind_all("<MouseWheel>")
+        canvas.unbind_all("<Button-4>")
+        canvas.unbind_all("<Button-5>")
+    
+    canvas.bind("<Enter>", bind_mousewheel)
+    canvas.bind("<Leave>", unbind_mousewheel)
     
     # container와 scrollable_frame을 반환
     return container, scrollable_frame
