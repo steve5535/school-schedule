@@ -5,7 +5,7 @@ import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 
 # 상수 설정
 WINDOW_WIDTH = 600 # 창 가로 길이
-WINDOW_HEIGHT = 400 # 창 세로 길이
+WINDOW_HEIGHT = 360 # 창 세로 길이
 
 ITEM_WIDTH = 300 # 준비물 창 가로 길이
 ITEM_HEIGHT = 200 # 준비물 창 세로 길이
@@ -16,6 +16,12 @@ BUTTON_Y_BLANK = 1 # 버튼 위아래 여백
 
 # 요일별 수업 딕셔너리
 timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
+
+# 요일 버튼 객체를 저장할 딕셔너리
+day_buttons = {}
+
+#현재 선택된 버튼 객체를 저장할 변수
+current_selected_button = None
 
 # 스크롤 가능한 프레임 생성 함수
 def create_scrollable_frame(parent):
@@ -389,11 +395,33 @@ def refresh_item_list(day, cls, item_frame, item_canvas):
 def set_styles():
     style = ttk.Style()
     
+    try:
+        style.theme_use('xpnative')
+    except tk.TclError:
+        pass
+    
     # 기본 버튼 스타일
-    style.configure("Normal.TButton", background="SystemButtonFace", foreground="black", padding=6)
+    style.configure("Normal.TButton",
+                    background="SystemButtonFace",
+                    foreground="black",
+                    padding=6,
+                    relief="eaised",
+                    font=('Arial', 10, 'normal'))
     
     # 선택된 버튼 스타일
-    style.configure("Selected.TButton", background="#0078D7", foreground="white", padding=6)
+    style.configure("Selected.TButton",
+                    background="#0078D7",
+                    foreground="white",
+                    padding=6,
+                    relief="flat",
+                    font=('Arial', 10, 'bold'))
+    
+    style.map("Selected.TButton",
+            foreground=[('pressed', 'white'),
+                        ('active', 'white'),
+                        ('!disabled', 'white')],
+            background=[('pressed', '#005bb5'),
+                        ('active', '#0078D7')])
     
     # Notebook
     style.configure("TNotebook.Tab", padding=[10, 5])
@@ -403,6 +431,17 @@ def set_styles():
 
 # 수업 리스트 표시 함수
 def show_timetable(day):
+    global current_selected_button
+    # 이전에 선택된 버튼 스타일 초기화
+    if current_selected_button:
+        current_selected_button.configure(style="Normal.TButton")
+    
+    # 현재 선택된 버튼 스타일 변경
+    new_selected_button = day_buttons.get(day)
+    if new_selected_button:
+        new_selected_button.configure(style="Selected.TButton")
+        current_selected_button = new_selected_button
+    
     create_input_widgets(day) # 함수 호출
 
 load_timetable() # 함수 호출
@@ -432,8 +471,9 @@ notebook.add(tab_timetable, text="시간표") # 탭에 프레임 연결,이름 �
 # 월~금 버튼 배치
 days = ["월", "화", "수", "목", "금"] # 리스트에 요일 저장
 for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
-    button = ttk.Button(tab_timetable, text=day, command=lambda d=day: show_timetable(d)) # 버튼 생성
+    button = ttk.Button(tab_timetable,text=day, style="Normal.TButton", command=lambda d=day: show_timetable(d)) # 버튼 생성
     button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
+    day_buttons[day] = button
 
 # 스크롤 가능 영역 생성 함수 호출
 scroll_container, input_frame, input_canvas = create_scrollable_frame(tab_timetable)
@@ -443,5 +483,7 @@ scroll_container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
 for i in range(len(days)):
     tab_timetable.columnconfigure(i, weight=1)
     tab_timetable.rowconfigure(1, weight=1)
+
+show_timetable(days[0])
 
 root.mainloop() # 메인 루프
