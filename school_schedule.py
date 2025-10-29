@@ -385,7 +385,23 @@ def refresh_item_list(day, cls, item_frame, item_canvas):
     # 스크롤 영역 갱신
     item_canvas.after_idle(lambda: item_canvas.configure(scrollregion=item_canvas.bbox("all")))
 
-# 동작 확인용 함수
+# 스타일 함수
+def set_styles():
+    style = ttk.Style()
+    
+    # 기본 버튼 스타일
+    style.configure("Normal.TButton", background="SystemButtonFace", foreground="black", padding=6)
+    
+    # 선택된 버튼 스타일
+    style.configure("Selected.TButton", background="#0078D7", foreground="white", padding=6)
+    
+    # Notebook
+    style.configure("TNotebook.Tab", padding=[10, 5])
+    style.map("TNotebook.Tap",
+            background=[("selected", "#0078D7")],
+            foreground=[("selected", "white")])
+
+# 수업 리스트 표시 함수
 def show_timetable(day):
     create_input_widgets(day) # 함수 호출
 
@@ -401,6 +417,9 @@ for day in timetable_data:
 root = tk.Tk() # 메인 창을 생성
 root.title("학교 일정 관리 앱") # 창 이름
 root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}") # 창 크기 설정
+
+# 스타일 적용
+set_styles()
 
 # Notebook (텝 컨테이너)
 notebook = ttk.Notebook(root) # root 창 안에 Notebook(탭 컨테이너) 생성
