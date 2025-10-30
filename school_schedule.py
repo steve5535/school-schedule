@@ -395,35 +395,13 @@ def refresh_item_list(day, cls, item_frame, item_canvas):
 def set_styles():
     style = ttk.Style()
     
+    # 테마 설정
     try:
-        style.theme_use('xpnative')
+        style.theme_use('vista')
     except tk.TclError:
         pass
     
-    # 기본 버튼 스타일
-    style.configure("Normal.TButton",
-                    background="SystemButtonFace",
-                    foreground="black",
-                    padding=6,
-                    relief="eaised",
-                    font=('Arial', 10, 'normal'))
-    
-    # 선택된 버튼 스타일
-    style.configure("Selected.TButton",
-                    background="#0078D7",
-                    foreground="white",
-                    padding=6,
-                    relief="flat",
-                    font=('Arial', 10, 'bold'))
-    
-    style.map("Selected.TButton",
-            foreground=[('pressed', 'white'),
-                        ('active', 'white'),
-                        ('!disabled', 'white')],
-            background=[('pressed', '#005bb5'),
-                        ('active', '#0078D7')])
-    
-    # Notebook
+    # Notebook 스타일
     style.configure("TNotebook.Tab", padding=[10, 5])
     style.map("TNotebook.Tap",
             background=[("selected", "#0078D7")],
@@ -434,12 +412,20 @@ def show_timetable(day):
     global current_selected_button
     # 이전에 선택된 버튼 스타일 초기화
     if current_selected_button:
-        current_selected_button.configure(style="Normal.TButton")
+        current_selected_button.configure(bg="SystemButtonFace", # 배경시스템 기본색
+                                        fg="black", # 글씨 검은색
+                                        relief="flat", # 테두리 평평하게
+                                        bd=0) # 테두리 없음
     
     # 현재 선택된 버튼 스타일 변경
     new_selected_button = day_buttons.get(day)
     if new_selected_button:
-        new_selected_button.configure(style="Selected.TButton")
+        new_selected_button.configure(bg="white",
+                                    fg="#0078D7", # 글씨색 파란색
+                                    relief="solid", # 실선 테두리
+                                    bd=1, # 테두리 두께 1
+                                    highlightbackground="#0078D7",
+                                    highlightcolor="#0078D7")
         current_selected_button = new_selected_button
     
     create_input_widgets(day) # 함수 호출
@@ -471,7 +457,15 @@ notebook.add(tab_timetable, text="시간표") # 탭에 프레임 연결,이름 �
 # 월~금 버튼 배치
 days = ["월", "화", "수", "목", "금"] # 리스트에 요일 저장
 for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
-    button = ttk.Button(tab_timetable,text=day, style="Normal.TButton", command=lambda d=day: show_timetable(d)) # 버튼 생성
+    button = tk.Button(tab_timetable,
+                        text=day,
+                        fg="black", # 글씨색 검은색
+                        bg="SystemButtonFace", # 배경 시스템 기본
+                        relief="flat", # 테두리 평평하게
+                        bd=0, # 테두리 없음
+                        padx=10,
+                        pady=5,
+                        command=lambda d=day: show_timetable(d)) # 버튼 생성
     button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
     day_buttons[day] = button
 
