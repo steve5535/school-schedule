@@ -402,10 +402,14 @@ def set_styles():
         pass
     
     # Notebook 스타일
-    style.configure("TNotebook.Tab", padding=[10, 5])
-    style.map("TNotebook.Tap",
-            background=[("selected", "#0078D7")],
-            foreground=[("selected", "white")])
+    style.configure("TNotebook.Tab",
+                    padding=[10, 5],
+                    background="lightgray", # 배경색 회색
+                    foreground="black") # 글씨 색 검은색
+    # 선택되었을 때
+    style.map("TNotebook.Tab",
+            background=[("selected", "white")], # 배경 흰색
+            foreground=[("selected", "#0078D7")]) # 글씨 파란색
 
 # 수업 리스트 표시 함수
 def show_timetable(day):
