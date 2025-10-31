@@ -120,10 +120,9 @@ def create_scrollable_frame(parent):
     canvas.bind("<Enter>", bind_mousewheel)
     canvas.bind("<Leave>", unbind_mousewheel)
     
-    def on_countent_change(event):
+    def on_content_change(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
-    
-    scrollable_frame.bind("<Configure>", on_countent_change)
+    scrollable_frame.bind("<Configure>", on_content_change)
     
     # container와 scrollable_frame을 반환
     return container, scrollable_frame, canvas
@@ -200,6 +199,9 @@ def create_input_widgets(day, canvas=None):
         edit_btn = ttk.Button(input_frame, text="수정", width=BUTTON_SIZE, command=lambda c=cls: edit_class(day, c))
         edit_btn.grid(row=i+1, column=5, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
     
+    input_frame.update_idletasks()
+    input_canvas.configure(scrollregion=input_canvas.bbox("all"))
+    
     if canvas:
         canvas.configure(scrollregion=canvas.bbox("all"))
     
@@ -220,6 +222,8 @@ def add_class(day, class_name=None, event=None):
         timetable_data[day].append({"name": class_name, "items": []}) # 딕셔너리에 저장
         save_timetable() # 저장
     
+    input_frame.update_idletasks()
+    
     create_input_widgets(day, input_canvas) # 함수 호출
     # Entry 초기화
     entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
@@ -234,6 +238,7 @@ def delete_class(day, class_to_delete):
     if class_to_delete in timetable_data[day]:
         timetable_data[day].remove(class_to_delete)
         save_timetable()
+    input_frame.update_idletasks()
     create_input_widgets(day, input_canvas)
 
 # 수업 이름 수정 함수
