@@ -348,8 +348,12 @@ def open_item_window(day, class_data):
     min_w = win.winfo_width()
     min_h = win.winfo_height()
     win.minsize(min_w, min_h)
+    
+    # item_window 딕셔너리 정리
+    win.protocol("WM_DELETE_WINDOW", lambda: close_item_window(class_name, win))
 
 # 준비물 창 닫을 때 정리 함수
+
 def close_item_window(class_name, win):
     if class_name in item_window:
         del item_window[class_name]
