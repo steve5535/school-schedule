@@ -120,12 +120,17 @@ def create_scrollable_frame(parent):
     canvas.bind("<Enter>", bind_mousewheel)
     canvas.bind("<Leave>", unbind_mousewheel)
     
+    def on_countent_change(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    
+    scrollable_frame.bind("<Configure>", on_countent_change)
+    
     # container와 scrollable_frame을 반환
     return container, scrollable_frame, canvas
 
 # 저장용 함수
 def save_timetable():
-    tmp_file = "timetable_tem.json"
+    tmp_file = "timetable_temp.json"
     with open(tmp_file, "w", encoding="utf-8") as f:
         json.dump(timetable_data, f, ensure_ascii=False, indent=4)
     os.replace(tmp_file, "timetable.json")
@@ -153,7 +158,7 @@ def on_focus_out(event, entry, placeholder):
         entry.configure(foreground="gray")
 
 # 입력창+버튼 생성 함수
-def create_input_widgets(day):
+def create_input_widgets(day, canvas=None):
     # input_frame 안의 기존 위젯들 삭제
     for widget in input_frame.winfo_children():
         widget.destroy()
@@ -195,8 +200,8 @@ def create_input_widgets(day):
         edit_btn = ttk.Button(input_frame, text="수정", width=BUTTON_SIZE, command=lambda c=cls: edit_class(day, c))
         edit_btn.grid(row=i+1, column=5, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
     
-    input_frame.update_idletasks()
-    input_canvas.configure(scrollregion=input_canvas.bbox("all"))
+    if canvas:
+        canvas.configure(scrollregion=canvas.bbox("all"))
     
     try:
         input_canvas.after_idle(lambda: input_canvas.configure(scrollregion=input_canvas.bbox("all")))
@@ -215,7 +220,7 @@ def add_class(day, class_name=None, event=None):
         timetable_data[day].append({"name": class_name, "items": []}) # 딕셔너리에 저장
         save_timetable() # 저장
     
-    create_input_widgets(day) # 함수 호출
+    create_input_widgets(day, input_canvas) # 함수 호출
     # Entry 초기화
     entry_widget = input_frame.winfo_children()[0] # 첫 번째 위젯이 Entry
     entry_widget.delete(0, tk.END)
@@ -229,7 +234,7 @@ def delete_class(day, class_to_delete):
     if class_to_delete in timetable_data[day]:
         timetable_data[day].remove(class_to_delete)
         save_timetable()
-    create_input_widgets(day)
+    create_input_widgets(day, input_canvas)
 
 # 수업 이름 수정 함수
 def edit_class(day, cls):
@@ -255,21 +260,21 @@ def update_class(day, cls, new_name):
         cls["name"] = new_name # 딕셔너리 안 이름 수정
         save_timetable()
     
-    create_input_widgets(day) # 함수 호출
+    create_input_widgets(day, input_canvas) # 함수 호출
 
 # 수업 이름 위로 이동 함수
 def move_class_up(day, index):
     if index > 0:
         timetable_data[day][index], timetable_data[day][index-1] = timetable_data[day][index-1], timetable_data[day][index]
         save_timetable()
-        create_input_widgets(day)
+        create_input_widgets(day, input_canvas)
 
 # 수업 이름 아래로 이동 함수
 def move_class_down(day, index):
     if index < len(timetable_data[day])-1:
         timetable_data[day][index], timetable_data[day][index+1] = timetable_data[day][index+1], timetable_data[day][index]
         save_timetable()
-        create_input_widgets(day)
+        create_input_widgets(day, input_canvas)
 
 item_window = {}
 
@@ -363,7 +368,7 @@ def add_item(day, cls, entry_widget, item_frame, item_canvas):
         entry_widget.configure(foreground="black")
         
         # 함수 호출(UI 갱신)
-        create_input_widgets(day)
+        create_input_widgets(day, input_canvas)
 
 # 준비물  삭제 함수
 def delete_item(day, cls, item_name, item_frame, item_canvas):
@@ -372,7 +377,7 @@ def delete_item(day, cls, item_name, item_frame, item_canvas):
     refresh_item_list(day, cls, item_frame, item_canvas)
     
     # 함수 호출(UI 갱신)
-    create_input_widgets(day)
+    create_input_widgets(day, input_canvas)
 
 # 준비물 목록 갱신 함수
 def refresh_item_list(day, cls, item_frame, item_canvas):
@@ -432,15 +437,9 @@ def show_timetable(day):
                                     highlightcolor="#0078D7")
         current_selected_button = new_selected_button
     
-    create_input_widgets(day) # 함수 호출
+    create_input_widgets(day, input_canvas) # 함수 호출
 
 load_timetable() # 함수 호출
-
-# 문자열로 저장된 수업 데이터를 딕셔너리로 변환
-for day in timetable_data:
-    for i, cls in enumerate(timetable_data[day]):
-        if isinstance(cls, str): # cls가 문자열이면
-            timetable_data[day][i] = {"name": cls, "items": []} # 딕셔너리로 변환
 
 # Tkinter 기본 설정
 root = tk.Tk() # 메인 창을 생성
