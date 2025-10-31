@@ -4,8 +4,8 @@ import json # json라이브러리 불러옴
 import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 
 # 상수 설정
-WINDOW_WIDTH = 600 # 창 가로 길이
-WINDOW_HEIGHT = 360 # 창 세로 길이
+WINDOW_WIDTH = 550 # 창 가로 길이
+WINDOW_HEIGHT = 350 # 창 세로 길이
 
 ITEM_WIDTH = 300 # 준비물 창 가로 길이
 ITEM_HEIGHT = 200 # 준비물 창 세로 길이
@@ -478,12 +478,12 @@ for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
                         padx=10,
                         pady=5,
                         command=lambda d=day: show_timetable(d)) # 버튼 생성
-    button.grid(row=0, column=i, padx=5, pady=10, sticky="nsew") # 버튼 세팅
+    button.grid(row=0, column=i, padx=5, pady=(5,2), sticky="nsew") # 버튼 세팅
     day_buttons[day] = button
 
 # 스크롤 가능 영역 생성 함수 호출
 scroll_container, input_frame, input_canvas = create_scrollable_frame(tab_timetable)
-scroll_container.grid(row=1, column=0, columnspan=5, pady=20, sticky="nsew")
+scroll_container.grid(row=1, column=0, columnspan=5, pady=(0,5), sticky="nsew")
 
 # 창 크기에 따라 가로로 늘어가게 함
 for i in range(len(days)):
