@@ -4,14 +4,12 @@ import json # json라이브러리 불러옴
 import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 import sys
 
-# 파일 저장
-if getattr(sys, 'frozen', False):
-    BASE_DIR = os.path.dirname(sys.executable) # exe 파일이 있는 폴더
-else:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # .py 파일이 있는 폴더
+# 앱 데이터 전용 폴더
+APPDATA_DIR = os.path.join(os.environ['USERPROFILE'], "AppData", "Local", "MyshoolApp")
+os.makedirs(APPDATA_DIR, exist_ok=True) # 폴더 없으면 생성
 
-DATA_PATH = os.path.join(BASE_DIR, "timetable.json") # 저장 파일 경로 설정
-TMP_PATH = os.path.join(BASE_DIR, "timetable_temp.json")
+DATA_PATH = os.path.join(APPDATA_DIR, "timetable.json") # 저장 파일 경로 설정
+TMP_PATH = os.path.join(APPDATA_DIR, "timetable_temp.json") # 임시 파일 경로
 
 # 상수 설정
 WINDOW_WIDTH = 550 # 창 가로 길이
@@ -152,8 +150,7 @@ def load_timetable():
                 timetable_data = json.load(f)
         except (json.JSONDecodeError, OSError):
             timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
-    else:
-        timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
+    else:timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
 # 입력창 클릭시 플레이홀더를 사라지게 하는 함수
 def on_focus_in(event, entry, placeholder):
