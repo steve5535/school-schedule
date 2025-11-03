@@ -2,6 +2,16 @@ import tkinter as tk # tkinter라이브러리를 tk로 불러옴
 from tkinter import ttk # ttk모듈 불러옴
 import json # json라이브러리 불러옴
 import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
+import sys
+
+# 파일 저장
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable) # exe 파일이 있는 폴더
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # .py 파일이 있는 폴더
+
+DATA_PATH = os.path.join(BASE_DIR, "timetable.json") # 저장 파일 경로 설정
+TMP_PATH = os.path.join(BASE_DIR, "timetable_temp.json")
 
 # 상수 설정
 WINDOW_WIDTH = 550 # 창 가로 길이
@@ -129,22 +139,21 @@ def create_scrollable_frame(parent):
 
 # 저장용 함수
 def save_timetable():
-    file_path = os.path.join(os.path.dirname(__file__), "timetable.json")
-    tmp_file = (os.path.join(os.path.dirname(__file__), "timetable_temp.json"))
-    with open(tmp_file, "w", encoding="utf-8") as f:
+    with open(TMP_PATH, "w", encoding="utf-8") as f:
         json.dump(timetable_data, f, ensure_ascii=False, indent=4)
-    os.replace(tmp_file, file_path)
+    os.replace(TMP_PATH, DATA_PATH)
 
 # 불러오기 함수
 def load_timetable():
     global timetable_data
-    file_path = os.path.join(os.path.dirname(__file__), "timetable.json")
-    if os.path.exists(file_path):
+    if os.path.exists(DATA_PATH):
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(DATA_PATH, "r", encoding="utf-8") as f:
                 timetable_data = json.load(f)
         except (json.JSONDecodeError, OSError):
             timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
+    else:
+        timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
 
 # 입력창 클릭시 플레이홀더를 사라지게 하는 함수
 def on_focus_in(event, entry, placeholder):
