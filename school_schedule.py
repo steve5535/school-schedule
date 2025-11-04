@@ -164,60 +164,59 @@ def on_focus_out(event, entry, placeholder):
         entry.insert(0, placeholder)
         entry.configure(foreground="gray")
 
-# 입력창+버튼 생성 함수
-def create_input_widgets(day, canvas=None):
-    # input_frame 안의 기존 위젯들 삭제
+# 수업 입력창 생성 함수
+def create_input_area(input_frame, day, on_add):
     for widget in input_frame.winfo_children():
         widget.destroy()
     
     # 수업 입력 Entry 생성
     entry = ttk.Entry(input_frame, width=30)
     entry.grid(row=0, column=0, padx=5, pady=5)
-    
-    # Enter 키로 추가
-    entry.bind('<Return>', lambda event: add_class(day, event=event))
-    
-    # 추가 버튼 생성
-    add_btn = ttk.Button(input_frame, text="추가", command=lambda: add_class(day, entry.get()))
-    add_btn.grid(row=0, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
-    
     # 플레이스홀더 텍스트 추가
     entry.insert(0, "수업 이름") # 기본 문구
     entry.configure(foreground="gray") # 글씨 색 연하게
     entry.bind("<FocusIn>", lambda event: on_focus_in(event, entry, "수업 이름"))
     entry.bind("<FocusOut>", lambda event: on_focus_out(event, entry, "수업 이름"))
+    # Enter 키로 추가
+    entry.bind('<Return>', lambda event: add_class(day, event=event))
     
-    # 저장된 수업들을 Label로 표시
+    # 추가 버튼 생성
+    add_btn = ttk.Button(input_frame, text="추가", command=lambda: on_add(day, entry.get()))
+    add_btn.grid(row=0, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
+    
+    return entry
+
+# 수업 리스트 표시 함수
+def display_class_list(input_frame, day, timetable_data, canvas=None):
     for i, cls in enumerate(timetable_data[day]):
-        lbl = ttk.Label(input_frame, text=f"{cls['name']} {'—' * (5 - len(cls['name']))} 준비물 : {len(cls['items'])}개")
-        lbl.grid(row=i+1, column=0, sticky="ew", padx=10, pady=1)
-        # 준비물 추가 버튼
-        item_btn = ttk.Button(input_frame, text="준비물", width=BUTTON_SIZE, command=lambda c=cls: open_item_window(day, c))
-        item_btn.grid(row=i+1, column=1, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
-        # 삭제 버튼
-        del_btn = ttk.Button(input_frame, text="삭제", width=BUTTON_SIZE, command=lambda c=cls: delete_class(day,c))
-        del_btn.grid(row=i+1, column=2, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
-        # 위로 이동 버튼
-        up_btn = ttk.Button(input_frame, text="↑", width=BUTTON_SIZE, command=lambda i=i: move_class_up(day,i))
-        up_btn.grid(row=i+1, column=3, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
-        # 아래로 이동 버튼
-        down_btn = ttk.Button(input_frame, text="↓", width=BUTTON_SIZE, command=lambda i=i: move_class_down(day,i))
-        down_btn.grid(row=i+1, column=4, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
-        # 수정 버튼
-        edit_btn = ttk.Button(input_frame, text="수정", width=BUTTON_SIZE, command=lambda c=cls: edit_class(day, c))
-        edit_btn.grid(row=i+1, column=5, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+            lbl = ttk.Label(input_frame, text=f"{cls['name']} {'—' * (5 - len(cls['name']))} 준비물 : {len(cls['items'])}개")
+            lbl.grid(row=i+1, column=0, sticky="ew", padx=10, pady=1)
+            # 준비물 추가 버튼
+            item_btn = ttk.Button(input_frame, text="준비물", width=BUTTON_SIZE, command=lambda c=cls: open_item_window(day, c))
+            item_btn.grid(row=i+1, column=1, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+            # 삭제 버튼
+            del_btn = ttk.Button(input_frame, text="삭제", width=BUTTON_SIZE, command=lambda c=cls: delete_class(day,c))
+            del_btn.grid(row=i+1, column=2, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+            # 위로 이동 버튼
+            up_btn = ttk.Button(input_frame, text="↑", width=BUTTON_SIZE, command=lambda i=i: move_class_up(day,i))
+            up_btn.grid(row=i+1, column=3, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+            # 아래로 이동 버튼
+            down_btn = ttk.Button(input_frame, text="↓", width=BUTTON_SIZE, command=lambda i=i: move_class_down(day,i))
+            down_btn.grid(row=i+1, column=4, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+            # 수정 버튼
+            edit_btn = ttk.Button(input_frame, text="수정", width=BUTTON_SIZE, command=lambda c=cls: edit_class(day, c))
+            edit_btn.grid(row=i+1, column=5, sticky="ew" , padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
     
     input_frame.update_idletasks()
     input_canvas.configure(scrollregion=input_canvas.bbox("all"))
     
     if canvas:
         canvas.configure(scrollregion=canvas.bbox("all"))
-    
-    try:
-        input_canvas.after_idle(lambda: input_canvas.configure(scrollregion=input_canvas.bbox("all")))
-    except NameError:
-        pass
-    
+
+# 입력창+버튼 생성 실행 함수
+def create_input_widgets(day, canvas=None):
+    entry = create_input_area(input_frame, day, add_class)
+    display_class_list(input_frame, day, timetable_data, canvas)
     return entry
 
 # 수업 이름 추가 함수
