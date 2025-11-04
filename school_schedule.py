@@ -474,6 +474,10 @@ notebook.pack(expand=True, fill='both') # 창 크기에 맞게 자동 확장
 tab_timetable = ttk.Frame(notebook) # 시간표 탭용 프레임 생성
 notebook.add(tab_timetable, text="시간표") # 탭에 프레임 연결,이름 지정
 
+# 시험 D-day 탭
+tab_test = ttk.Frame(notebook) # 시험 D-day 탭용 프레임 생성
+notebook.add(tab_test, text="시험 일정") # 탭에 프레임 연결,이름 지정
+
 # 월~금 버튼 배치
 days = ["월", "화", "수", "목", "금"] # 리스트에 요일 저장
 for i, day in enumerate(days): # i에는 1~4, day에는 "월"~"금" 저장
