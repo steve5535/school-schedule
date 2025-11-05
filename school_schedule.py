@@ -434,8 +434,6 @@ class TimeTableManager:
         
         # item_window 딕셔너리 정리
         win.protocol("WM_DELETE_WINDOW", lambda: self.close_item_window(class_name, win))
-        
-        #self.entry.focus_set()
     
     # 준비물 창 닫을 때 정리 메서드
     def close_item_window(self, class_name, win):
@@ -460,6 +458,7 @@ class TimeTableManager:
             entry_widget.configure(foreground="black")
         else:
             entry_widget.focus_set()
+        self.create_input_widgets()
     
     # 준비물 삭제 메서드
     def delete_item(self, cls, item_name, item_frame, item_canvas):
