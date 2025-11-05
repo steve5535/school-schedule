@@ -409,7 +409,7 @@ class TimeTableManager:
         item_entry.pack(side=tk.LEFT, expand=True, fill="x")
         
         # 추가 버튼
-        add_btn = ttk.Button(top_frame, text="추가", command=lambda: self.add_item(day, class_data, item_entry, item_frame, item_canvas))
+        add_btn = ttk.Button(top_frame, text="추가", command=lambda: self.add_item(class_data, item_entry, item_frame, item_canvas))
         add_btn.pack(side=tk.RIGHT, padx=(5, 0))
         
         # Enter키로 추가
@@ -435,7 +435,7 @@ class TimeTableManager:
         # item_window 딕셔너리 정리
         win.protocol("WM_DELETE_WINDOW", lambda: self.close_item_window(class_name, win))
         
-        self.entry.focus_set()
+        #self.entry.focus_set()
     
     # 준비물 창 닫을 때 정리 메서드
     def close_item_window(self, class_name, win):
