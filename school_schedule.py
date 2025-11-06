@@ -2,6 +2,7 @@ import tkinter as tk # tkinter라이브러리를 tk로 불러옴
 from tkinter import ttk # ttk모듈 불러옴
 import json # json라이브러리 불러옴
 import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
+from datetime import datetime # 시간 라이브러리 불러옴
 
 # 상수 설정
 WINDOW_WIDTH = 550 # 창 가로 길이
@@ -487,6 +488,11 @@ class TimeTableManager:
         
         # 스크롤 영역 갱신
         item_canvas.after_idle(lambda: item_canvas.configure(scrollregion=item_canvas.bbox("all")))
+
+#d-day 클래스 구조
+# 실행하면 시험 날짜 입력받는 입력창 (수업 입력 입력창 참조)
+# 입력받은 값 저장 (딕셔너리 형태로 저장)
+# 현재 날짜 - 시험 날짜 (날짜 따로 저장)
 
 # 스타일 함수
 def set_styles():
