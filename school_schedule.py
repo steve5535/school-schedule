@@ -199,6 +199,8 @@ class TimeTableManager:
         
         # 초기 요일 표시
         self.show_timetable(self.current_day)
+        
+        self.create_input_area()
     
     # --시간표 표시 및 선택 로직--
     # 수업 리스트 표시 함수
@@ -241,8 +243,6 @@ class TimeTableManager:
     
     # 수업 입력창 생성 메서드
     def create_input_area(self):
-        day = self.current_day
-        
         # 수업 입력 Entry 생성
         self.entry = ttk.Entry(self.input_frame, width=30)
         self.entry.grid(row=0, column=0, padx=5, pady=5)
@@ -494,6 +494,19 @@ class TimeTableManager:
 # 입력받은 값 저장 (딕셔너리 형태로 저장)
 # 현재 날짜 - 시험 날짜 (날짜 따로 저장)
 
+class ExamDDay(TimeTableManager):
+    # --상태 및 데이터 초기화
+    def __init__(self, root, notebook):
+        self.root = root
+        self.notebook = notebook
+        self.exam_dday = {} # 시험 날짜 저장 딕셔너리
+    
+    # --메인 UI 구성 메서드--
+    def setup(self):
+        # 시험 d-day 탭용 프레임 생성
+        self.tab_timetable = ttk.Frame(self.notebook) #  시험 날짜 탭용 프레임 생성
+        self.notebook.add(self.tab_timetable, text="시험 D-day") # 탭에 프레임 연결,이름 지정
+
 # 스타일 함수
 def set_styles():
     style = ttk.Style()
@@ -503,7 +516,6 @@ def set_styles():
         style.theme_use('vista')
     except tk.TclError:
         pass
-    
     # Notebook 스타일
     style.configure("TNotebook.Tab",
                     padding=[10, 5],
@@ -531,9 +543,7 @@ if __name__ == "__main__":
     # TimeTableManaher 인스턴스 생성 및 실행
     timetable_manager = TimeTableManager(root, notebook)
     timetable_manager.setup()
-    
-    # 시험 D-day 탭
-    tab_test = ttk.Frame(notebook) # 시험 D-day 탭용 프레임 생성
-    notebook.add(tab_test, text="시험 일정") # 탭에 프레임 연결,이름 지정
+    exem_dday = ExamDDay(root, notebook)
+    exem_dday.setup()
     
     root.mainloop() # 메인 루프
