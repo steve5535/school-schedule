@@ -46,7 +46,7 @@ def create_scrollable_frame(parent):
     # ID 저장
     frame_id = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     
-    def update_scrollregion():
+    def update_scrollregion_frame():
             # 모든 위젯의 실제 크기 반영
             scrollable_frame.update_idletasks()
             
@@ -78,7 +78,7 @@ def create_scrollable_frame(parent):
     
     # 스크롤 영역 자동 갱신
     def on_frame_configure(event=None):
-        canvas.after_idle(update_scrollregion)
+        canvas.after_idle(update_scrollregion_frame)
     
     canvas.bind("<Configure>", on_frame_configure)
     
@@ -143,13 +143,12 @@ class TimeTableManager:
         self.notebook = notebook
         self.timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []} # 요일별 수업 딕셔너리
         self.day_buttons ={} # 요일 버튼 객체를 저장할 딕셔너리
-        self.current_selected_button = None #현재 선택된 버튼 객체를 저장할 변수
+        self.current_selected_button = None # 현재 선택된 버튼 객체를 저장할 변수
         self.item_window = {} # 준비물 창 관리 딕셔너리
         self.current_day = "월" # 기본 요일 지정
-        self.first_start = True
         self.load_timetable() # 저장된 데이터 로드
     
-    # --데이터 관리 메서드--
+    # 데이터 관리 메서드
     # 저장용 메서드
     def save_timetable(self):
         with open(TMP_PATH, "w", encoding="utf-8") as f:
@@ -167,7 +166,7 @@ class TimeTableManager:
         else:
             self.timetable_data = {"월": [], "화": [], "수": [], "목": [], "금": []}
     
-    # --메인 UI 구성 메서드--
+    # 메인 UI 구성 메서드
     def setup(self):
         # 시간표 탭용 프레임 생성
         self.tab_timetable = ttk.Frame(self.notebook) # 시간표 탭용 프레임 생성
@@ -202,8 +201,8 @@ class TimeTableManager:
         
         self.create_input_area()
     
-    # --시간표 표시 및 선택 로직--
-    # 수업 리스트 표시 함수
+    # 시간표 표시 및 선택 로직
+    # 수업 리스트 표시 메서드
     def show_timetable(self, day):
         # 이전에 선택된 버튼 스타일 초기화
         if self.current_selected_button:
@@ -284,7 +283,7 @@ class TimeTableManager:
         if canvas:
             canvas.configure(scrollregion=canvas.bbox("all"))
     
-    # --수업 관리 메서드--
+    # 수업 관리 메서드
     # 수업 이름 추가 메서드
     def add_class(self, class_name=None, event=None):
         day = self.current_day
@@ -362,11 +361,10 @@ class TimeTableManager:
             self.save_timetable()
             self.create_input_widgets()
     
-    # --준비물 창 관련 메서드--
+    # 준비물 창 관련 메서드
     # 준비물 창 메서드
     def open_item_window(self, class_data):
         class_name = class_data["name"]
-        day = self.current_day
         
         # 창이 이미 열려 있으면 재사용
         if class_name in self.item_window and self.item_window[class_name].winfo_exists():
@@ -494,18 +492,85 @@ class TimeTableManager:
 # 입력받은 값 저장 (딕셔너리 형태로 저장)
 # 현재 날짜 - 시험 날짜 (날짜 따로 저장)
 
-class ExamDDay(TimeTableManager):
-    # --상태 및 데이터 초기화
+class ExamDDay():
+    # 상태 및 데이터 초기화
     def __init__(self, root, notebook):
         self.root = root
         self.notebook = notebook
         self.exam_dday = {} # 시험 날짜 저장 딕셔너리
+        self.load_exam_dday()
     
-    # --메인 UI 구성 메서드--
+    # 데이터 저장
+    def save_exam_dday(self):
+        path = os.path.join(APPDATA_DIR, "exam_dday.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.exam_dday, f, ensure_ascii=False, indent=4)
+    
+    # 데이터 불러오기
+    def load_exam_dday(self):
+        path = os.path.join(APPDATA_DIR, "exam_dday.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    self.exam_dday = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                self.exam_dday = {}
+        else:
+            self.exam_dday = {}
+    
+    # 메인 UI 구성 메서드
     def setup(self):
         # 시험 d-day 탭용 프레임 생성
         self.tab_timetable = ttk.Frame(self.notebook) #  시험 날짜 탭용 프레임 생성
         self.notebook.add(self.tab_timetable, text="시험 D-day") # 탭에 프레임 연결,이름 지정
+        
+        # 스크롤 가능한 영역 생성
+        self.scroll_container, self.input_frame, self.input_canvas = create_scrollable_frame(self.tab_timetable)
+        self.scroll_container.grid(row=1, column=0, columnspan=2, pady=(0,5), sticky="nsew")
+        
+        # 입력창 생성
+        self.create_input_area()
+    
+    # 시험 날짜 입력창 생성 메서드
+    def create_input_area(self):
+        # 시험 Entry 생성
+        self.entry = ttk.Entry(self.input_frame, width=30)
+        self.entry.grid(row=0, column=0, padx=5, pady=5)
+        # 플레이스홀더 텍스트 추가
+        self.entry.insert(0, "시험 날짜") # 기본 문구
+        self.entry.configure(foreground="gray") # 글씨 색 연하게
+        self.entry.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry, "시험 날짜"))
+        self.entry.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry, "시험 날짜"))
+        # Enter 키로 추가
+        self.entry.bind('<Return>', lambda event: self.add_exam(event=event))
+        # 추가 버튼 생성
+        add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
+        add_btn.grid(row=0, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
+    
+    # 시험 추가 메서드
+    def add_exam(self, exam_day=None, event=None):
+        entry_widget = getattr(self, 'entry', None)
+        if entry_widget is None:
+            return  # Entry가 없으면 그냥 종료
+        
+        if exam_day is None:
+            exam_day = entry_widget.get() or ""  # None 대비
+        
+        exam_day = exam_day.strip()  # 공백 제거
+        
+        if exam_day and exam_day != "시험 날짜":
+            # 딕셔너리에 저장
+            self.exam_dday["시험"] = exam_day
+            
+            # UI 갱신
+            self.create_input_area()
+            
+            # Entry 초기화
+            entry_widget.delete(0, tk.END)
+            entry_widget.focus_set()
+            entry_widget.configure(foreground="black")
+        else:
+            entry_widget.focus_set()
 
 # 스타일 함수
 def set_styles():
@@ -526,7 +591,7 @@ def set_styles():
             background=[("selected", "white")], # 배경 흰색
             foreground=[("selected", "#0078D7")]) # 글씨 파란색
 
-# --메인 애플리케이션 실행--
+# 메인 애플리케이션 실행
 if __name__ == "__main__":
     # Tkinter 기본 설정
     root = tk.Tk() # 메인 창을 생성
@@ -543,7 +608,7 @@ if __name__ == "__main__":
     # TimeTableManaher 인스턴스 생성 및 실행
     timetable_manager = TimeTableManager(root, notebook)
     timetable_manager.setup()
-    exem_dday = ExamDDay(root, notebook)
-    exem_dday.setup()
+    exam_dday = ExamDDay(root, notebook)
+    exam_dday.setup()
     
     root.mainloop() # 메인 루프
