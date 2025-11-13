@@ -201,7 +201,6 @@ class TimeTableManager:
         self.create_input_area()
     
     # 시간표 표시 및 선택 로직
-    # 수업 리스트 표시 메서드
     def show_timetable(self, day):
         # 이전에 선택된 버튼 스타일 초기화
         if self.current_selected_button:
@@ -224,12 +223,13 @@ class TimeTableManager:
         self.current_day = day # 현재 선택된 요일 저장
         self.create_input_widgets() # 함수 호출
     
+    # 수업 리스트 표시 메서드
     def create_input_widgets(self):
         # 기존 위젯 제거
         for widget in self.input_frame.winfo_children():
             widget.destroy()
         
-        # 수업 입력 Entry 밒 추가 버튼 생성
+        # 수업 입력 Entry 및 추가 버튼 생성
         self.create_input_area()
         
         # 수업 리스트 표시
@@ -291,7 +291,7 @@ class TimeTableManager:
         if class_name is None:
             class_name = entry_widget.get() # class_name 변수에 저장
         
-        if not class_name or class_name == "수업 이름":
+        if not class_name.split() or class_name == "수업 이름":
             on_focus_out(None, entry_widget, "수업 이름")
             entry_widget.focus_set()
             return
@@ -459,7 +459,6 @@ class TimeTableManager:
     
     # 준비물 삭제 메서드
     def delete_item(self, cls, item_name, item_frame, item_canvas):
-        day = self.current_day
         cls["items"].remove(item_name)
         self.save_timetable()
         self.refresh_item_list(cls, item_frame, item_canvas)
@@ -469,7 +468,6 @@ class TimeTableManager:
     
     # 준비물 목록 갱신 메서드
     def refresh_item_list(self, cls, item_frame, item_canvas):
-        day = self.current_day
         # 기존 위젯 제거
         for widget in item_frame.winfo_children():
             widget.destroy()
@@ -528,6 +526,7 @@ class ExamDDay():
         
         # 입력창 생성
         self.create_input_area()
+        self.display_exam_list()
     
     # 시험 날짜 입력창 생성 메서드
     def create_input_area(self):
@@ -545,6 +544,22 @@ class ExamDDay():
         add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
         add_btn.grid(row=0, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
+    # 시험 목록 표시 메서드
+    def display_exam_list(self):
+        # 기존 표시 위젯 제거
+        for widget in self.input_frame.grid_slaves():
+            if int(widget.grid_info()["row"]) > 0:
+                widget.destroy()
+        
+        for i, (exam_name, exam_date) in enumerate(self.exam_dday.items()):
+            # 시험 이름 및 날짜 표시
+            lbl = ttk.Label(self.input_frame, text=f"{exam_name} : {exam_date}")
+            lbl.grid(row=i+1, column=0, sticky="w", padx=5, pady=2)
+            
+            # 삭제 버튼
+            del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda event=exam_name: self.delete_exam(event))
+            del_btn.grid(row=i+1, column=1, padx=5, pady=2)
+    
     # 시험 추가 메서드
     def add_exam(self, exam_day=None, event=None):
         entry_widget = getattr(self, 'entry', None)
@@ -552,23 +567,31 @@ class ExamDDay():
             return  # Entry가 없으면 그냥 종료
         
         if exam_day is None:
-            exam_day = entry_widget.get() or ""  # None 대비
-        
-        exam_day = exam_day.strip()  # 공백 제거
+            exam_day = entry_widget.get().strip()
         
         if exam_day and exam_day != "시험 날짜":
+            # 시험 이름 중복 방지
+            key = f"시험{len(self.exam_dday) + 1}"
+            self.exam_dday[key] = exam_day
+            
             # 딕셔너리에 저장
             self.exam_dday["시험"] = exam_day
-            
             # UI 갱신
-            self.create_input_area()
-            
+            self.display_exam_list()
             # Entry 초기화
             entry_widget.delete(0, tk.END)
             entry_widget.focus_set()
             entry_widget.configure(foreground="black")
         else:
             entry_widget.focus_set()
+    
+    # 시험 삭제 메서드
+    def delete_exam(self, exam_key):
+        if exam_key in self.exam_dday:
+            del self.exam_dday[exam_key]
+            self.save_exam_dday()
+            self.create_input_area()
+            self.display_exam_list()
 
 # 스타일 함수
 def set_styles():
