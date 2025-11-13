@@ -198,7 +198,6 @@ class TimeTableManager:
         
         # 초기 요일 표시
         self.show_timetable(self.current_day)
-        
         self.create_input_area()
     
     # 시간표 표시 및 선택 로직
@@ -287,27 +286,26 @@ class TimeTableManager:
     # 수업 이름 추가 메서드
     def add_class(self, class_name=None, event=None):
         day = self.current_day
-        entry_widget = self.input_frame.winfo_children()[0]
+        entry_widget = self.entry
         
         if class_name is None:
             class_name = entry_widget.get() # class_name 변수에 저장
         
-        if class_name.strip() and class_name != "수업 이름": # 입력값이 비어있지 않을 때
-            self.timetable_data[day].append({"name": class_name, "items": []}) # 딕셔너리에 저장
-            self.save_timetable() # 저장
-            
-            self.create_input_widgets()
-            
-            # Entry 초기화 및 포커스
-            entry_widget = self.input_frame.winfo_children()[0]
+        if not class_name or class_name == "수업 이름":
+            on_focus_out(None, entry_widget, "수업 이름")
             entry_widget.focus_set()
-            #플레이홀더 텍스트 색 복구 방지
-            entry_widget.configure(foreground="black")
-            entry_widget.delete(0, tk.END)
-            
-        else:
-            entry_widget.focus_set()
-    
+            return
+        
+        self.timetable_data[day].append({"name": class_name, "items": []}) # 딕셔너리에 저장
+        self.save_timetable() # 저장
+        self.create_input_widgets()
+        
+        # Entry 초기화 및 포커스
+        entry_widget = self.input_frame.winfo_children()[0]
+        entry_widget.focus_set()
+        #플레이홀더 텍스트 색 복구 방지
+        entry_widget.configure(foreground="black")
+        entry_widget.delete(0, tk.END)
     
     # 수업 이름 삭제 메서드
     def delete_class(self, class_to_delete):
