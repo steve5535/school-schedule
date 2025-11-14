@@ -494,6 +494,7 @@ class ExamDDay():
         self.root = root
         self.notebook = notebook
         self.exam_dday = {} # 시험 날짜 저장 딕셔너리
+        self.today = datetime.now() # 현재날짜
         self.load_exam_dday()
     
     # 데이터 저장
@@ -525,14 +526,20 @@ class ExamDDay():
         self.scroll_container.grid(row=1, column=0, columnspan=2, pady=(0,5), sticky="nsew")
         
         # 입력창 생성
+        self.to_day()
         self.create_input_area()
         self.display_exam_list()
+    
+    # 오늘 날짜 표시 메서드
+    def to_day(self):
+        self.label = ttk.Label(self.input_frame, text=f"오늘 날짜 : {self.today}", font="Arial")
+        self.label.grid(row=0, column=0, sticky="ew", padx=10, pady=1)
     
     # 시험 날짜 입력창 생성 메서드
     def create_input_area(self):
         # 시험 Entry 생성
         self.entry = ttk.Entry(self.input_frame, width=30)
-        self.entry.grid(row=0, column=0, padx=5, pady=5)
+        self.entry.grid(row=1, column=0, padx=5, pady=5)
         # 플레이스홀더 텍스트 추가
         self.entry.insert(0, "시험 날짜") # 기본 문구
         self.entry.configure(foreground="gray") # 글씨 색 연하게
@@ -542,7 +549,7 @@ class ExamDDay():
         self.entry.bind('<Return>', lambda event: self.add_exam(event=event))
         # 추가 버튼 생성
         add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
-        add_btn.grid(row=0, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
+        add_btn.grid(row=1, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
     # 시험 목록 표시 메서드
     def display_exam_list(self):
