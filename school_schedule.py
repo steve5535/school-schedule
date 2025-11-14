@@ -336,7 +336,7 @@ class TimeTableManager:
     
     # 수업 이름 수정 후 저장 메서드
     def update_class(self, cls, new_name):
-        day = self.current_day
+        #day = self.current_day
         if new_name.strip(): # 입력값이 비어있지 않을 때
             cls["name"] = new_name # 딕셔너리 안 이름 수정
             self.save_timetable()
@@ -532,8 +532,13 @@ class ExamDDay():
     
     # 오늘 날짜 표시 메서드
     def to_day(self):
-        self.label = ttk.Label(self.input_frame, text=f"오늘 날짜 : {self.today}", font="Arial")
-        self.label.grid(row=0, column=0, sticky="ew", padx=10, pady=1)
+        # 요일 한국어 변환
+        week_korean_list = ["일", "월", "화", "수", "목", "금", "토"] # 요일 저장 리스트
+        day_num = int(self.today.strftime("%w"))
+        week_korean = week_korean_list[day_num]
+        
+        self.label = ttk.Label(self.input_frame, text=f"오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {week_korean}요일", font="Arial")
+        self.label.grid(row=0, column=0, padx=10, pady=1)
     
     # 시험 날짜 입력창 생성 메서드
     def create_input_area(self):
