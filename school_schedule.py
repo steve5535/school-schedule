@@ -135,6 +135,11 @@ def on_focus_out(event, entry, placeholder):
         entry.insert(0, placeholder)
         entry.configure(foreground="gray")
 
+# 요일 한국어 변환 함수
+def get_korean_week():
+    week = ["일", "월", "화", "수", "목", "금", "토"] # 요일 저장 리스트
+    return week[int(datetime.today().strftime("%w"))]
+
 # 시간표 클래스
 class TimeTableManager:
     def __init__(self, root, notebook):
@@ -145,8 +150,16 @@ class TimeTableManager:
         self.day_buttons ={} # 요일 버튼 객체를 저장할 딕셔너리
         self.current_selected_button = None # 현재 선택된 버튼 객체를 저장할 변수
         self.item_window = {} # 준비물 창 관리 딕셔너리
-        self.current_day = "월" # 기본 요일 지정
+        self.current_day = None # 기본 요일 지정
         self.load_timetable() # 저장된 데이터 로드
+        
+        today = get_korean_week()
+        timetable_week = ["월", "화", "수", "목", "금"]
+        
+        if today in timetable_week:
+            self.current_day = today
+        else:
+            self.current_dayj = "월"
     
     # 데이터 관리 메서드
     # 저장용 메서드
@@ -336,7 +349,6 @@ class TimeTableManager:
     
     # 수업 이름 수정 후 저장 메서드
     def update_class(self, cls, new_name):
-        #day = self.current_day
         if new_name.strip(): # 입력값이 비어있지 않을 때
             cls["name"] = new_name # 딕셔너리 안 이름 수정
             self.save_timetable()
@@ -494,7 +506,7 @@ class ExamDDay():
         self.root = root
         self.notebook = notebook
         self.exam_dday = {} # 시험 날짜 저장 딕셔너리
-        self.today = datetime.now() # 현재날짜
+        self.today = datetime.now()
         self.load_exam_dday()
     
     # 데이터 저장
@@ -532,12 +544,9 @@ class ExamDDay():
     
     # 오늘 날짜 표시 메서드
     def to_day(self):
-        # 요일 한국어 변환
-        week_korean_list = ["일", "월", "화", "수", "목", "금", "토"] # 요일 저장 리스트
-        day_num = int(self.today.strftime("%w"))
-        week_korean = week_korean_list[day_num]
+        self.week_korean = get_korean_week()
         
-        self.label = ttk.Label(self.input_frame, text=f"오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {week_korean}요일", font="Arial")
+        self.label = ttk.Label(self.input_frame, text=f"오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {self.week_korean}요일", font="Arial")
         self.label.grid(row=0, column=0, padx=10, pady=1)
     
     # 시험 날짜 입력창 생성 메서드
