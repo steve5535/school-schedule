@@ -159,7 +159,7 @@ class TimeTableManager:
         if today in timetable_week:
             self.current_day = today
         else:
-            self.current_dayj = "월"
+            self.current_day = "월"
     
     # 데이터 관리 메서드
     # 저장용 메서드
