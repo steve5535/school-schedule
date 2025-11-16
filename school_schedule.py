@@ -1,5 +1,6 @@
 import tkinter as tk # tkinter라이브러리를 tk로 불러옴
 from tkinter import ttk # ttk모듈 불러옴
+from tkinter import messagebox # messagebox모듈 불러옴
 import json # json라이브러리 불러옴
 import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
 from datetime import datetime # 시간 라이브러리 불러옴
@@ -551,12 +552,12 @@ class ExamDDay():
     def to_day(self):
         self.week_korean = get_korean_week()
         
-        self.label = ttk.Label(self.input_frame, text=f'오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {self.week_korean}요일', font="Arial")
+        self.label = ttk.Label(self.input_frame, text=f'{self.today.strftime("%Y %m/%d")} {self.week_korean}요일', font="Arial")
         self.label.grid(row=0, column=0, padx=0, pady=0, columnspan=2, sticky="w")
     
-    # 시험 날짜 입력창 생성 메서드
+    # 시험 이름 및 날짜 입력창 생성 메서드
     def create_input_area(self):
-        # 시험 Entry 생성
+        # 시험 이름 Entry 생성
         self.entry = ttk.Entry(self.input_frame, width=30)
         self.entry.grid(row=1, column=0, padx=5, pady=5, sticky="w")
         # 플레이스홀더 텍스트 추가
@@ -564,11 +565,21 @@ class ExamDDay():
         self.entry.configure(foreground="gray") # 글씨 색 연하게
         self.entry.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry, "시험 이름"))
         self.entry.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry, "시험 이름"))
+        
+        # 날짜 Entry 생성
+        self.entry_data = ttk.Entry(self.input_frame, width=15)
+        self.entry_data.grid(row=1, column=1, padx=5, pady=5, sticky="w")
+        # 플레이스홀더 텍스트 생성
+        self.entry_data.insert(0, "YYYY-MM-DD") # 기본 문구
+        self.entry_data.configure(foreground="gray") # 글씨 색 연하게
+        self.entry_data.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry_data, "YYYY-MM-DD"))
+        self.entry_data.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry_data, "YYYY-MM-DD"))
+        
         # Enter 키로 추가
         self.entry.bind('<Return>', lambda event: self.add_exam())
         # 추가 버튼 생성
         add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
-        add_btn.grid(row=1, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
+        add_btn.grid(row=1, column=2, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
     # 시험 목록 표시 메서드
     def display_exam_list(self):
@@ -586,20 +597,39 @@ class ExamDDay():
             del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda key=exam_name: self.delete_exam(key))
             del_btn.grid(row=i+2, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
-    # 시험 이름 추가 메서드
-    def add_exam(self, exam_name=None, event=None):
+    # 시험 이름 및 날짜 추가 메서드
+    def add_exam(self, exam_name=None, exam_data=None, event=None):
         exam_name = self.entry.get().strip()
+        exam_data = self.entry_data.get().strip()
         
-        # 입력 값 확인
+        # 시험 이름 입력 값 확인
         if not exam_name or exam_name == "시험 이름":
             on_focus_out(None, self.entry, "시험 이름")
             self.entry.focus_set()
+            return
+        
+        # 시험 날짜 입력 값 확인
+        if not exam_data or exam_data == "YYYY-MM-DD":
+            on_focus_out(None, self.entry_data, "YYYY-MM-DD")
+            self.entry_data.focus_set()
+            return
+        
+        # 시험 날짜 형식 확인
+        try:
+            exam_day = datetime.strptime(exam_data, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("날짜 오류", "날짜를 YYYY-MM-DD 형식으로 입력하세요.")
+            self.entry_data.focus_set()
             return
         
         # 시험 이름 추가
         if exam_name not in self.exam_dday:
             self.exam_dday[exam_name] = ""
             self.save_exam_dday()
+        else:
+            self.exam_dday[exam_name] = exam_data
+            self.save_exam_dday()
+        
         
         # UI 업데이트
         self.display_exam_list()
