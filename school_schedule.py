@@ -506,7 +506,7 @@ class ExamDDay():
         self.root = root
         self.notebook = notebook
         self.exam_dday = {} # 시험 날짜 저장 딕셔너리
-        self.today = datetime.now()
+        self.today = datetime.today()
         self.load_exam_dday()
     
     # 데이터 저장
@@ -530,12 +530,15 @@ class ExamDDay():
     # 메인 UI 구성 메서드
     def setup(self):
         # 시험 d-day 탭용 프레임 생성
-        self.tab_timetable = ttk.Frame(self.notebook) #  시험 날짜 탭용 프레임 생성
-        self.notebook.add(self.tab_timetable, text="시험 D-day") # 탭에 프레임 연결,이름 지정
+        self.tab_dday = ttk.Frame(self.notebook) #  시험 날짜 탭용 프레임 생성
+        self.notebook.add(self.tab_dday, text="시험 D-day") # 탭에 프레임 연결,이름 지정
         
         # 스크롤 가능한 영역 생성
-        self.scroll_container, self.input_frame, self.input_canvas = create_scrollable_frame(self.tab_timetable)
-        self.scroll_container.grid(row=1, column=0, columnspan=2, pady=(0,5), sticky="nsew")
+        self.scroll_container, self.input_frame, self.input_canvas = create_scrollable_frame(self.tab_dday)
+        self.scroll_container.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
+        
+        self.tab_dday.grid_rowconfigure(0, weight=1)
+        self.tab_dday.grid_columnconfigure(0, weight=1)
         
         # 입력창 생성
         self.to_day()
@@ -546,21 +549,21 @@ class ExamDDay():
     def to_day(self):
         self.week_korean = get_korean_week()
         
-        self.label = ttk.Label(self.input_frame, text=f"오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {self.week_korean}요일", font="Arial")
+        self.label = ttk.Label(self.input_frame, text=f'오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {self.week_korean}요일', font="Arial")
         self.label.grid(row=0, column=0, padx=10, pady=1)
     
     # 시험 날짜 입력창 생성 메서드
     def create_input_area(self):
         # 시험 Entry 생성
         self.entry = ttk.Entry(self.input_frame, width=30)
-        self.entry.grid(row=1, column=0, padx=5, pady=5)
+        self.entry.grid(row=1, column=0, padx=5, pady=5, sticky="w")
         # 플레이스홀더 텍스트 추가
-        self.entry.insert(0, "시험 날짜") # 기본 문구
+        self.entry.insert(0, "시험 이름") # 기본 문구
         self.entry.configure(foreground="gray") # 글씨 색 연하게
-        self.entry.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry, "시험 날짜"))
-        self.entry.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry, "시험 날짜"))
+        self.entry.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry, "시험 이름"))
+        self.entry.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry, "시험 이름"))
         # Enter 키로 추가
-        self.entry.bind('<Return>', lambda event: self.add_exam(event=event))
+        self.entry.bind('<Return>', lambda event: self.add_exam())
         # 추가 버튼 생성
         add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
         add_btn.grid(row=1, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
@@ -569,42 +572,41 @@ class ExamDDay():
     def display_exam_list(self):
         # 기존 표시 위젯 제거
         for widget in self.input_frame.grid_slaves():
-            if int(widget.grid_info()["row"]) > 0:
+            if int(widget.grid_info()["row"]) >= 2:
                 widget.destroy()
         
-        for i, (exam_name, exam_date) in enumerate(self.exam_dday.items()):
+        for i, exam_name in enumerate(self.exam_dday.items()):
             # 시험 이름 및 날짜 표시
-            lbl = ttk.Label(self.input_frame, text=f"{exam_name} : {exam_date}")
-            lbl.grid(row=i+1, column=0, sticky="w", padx=5, pady=2)
+            lbl = ttk.Label(self.input_frame, text=f"{exam_name}")
+            lbl.grid(row=i+2, column=0, sticky="w", padx=5, pady=2)
             
             # 삭제 버튼
             del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda event=exam_name: self.delete_exam(event))
-            del_btn.grid(row=i+1, column=1, padx=5, pady=2)
+            del_btn.grid(row=i+2, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
     
-    # 시험 추가 메서드
-    def add_exam(self, exam_day=None, event=None):
-        entry_widget = getattr(self, 'entry', None)
-        if entry_widget is None:
-            return  # Entry가 없으면 그냥 종료
+    # 시험 이름 추가 메서드
+    def add_exam(self, exam_name=None, event=None):
+        exam_name = self.entry.get().strip()
         
-        if exam_day is None:
-            exam_day = entry_widget.get().strip()
+        # 입력 값 확인
+        if not exam_name or exam_name == "시험 이름":
+            on_focus_out(None, self.entry, "시험 이름")
+            self.entry.focus_set()
+            return
         
-        if exam_day and exam_day != "시험 날짜":
-            # 시험 이름 중복 방지
-            key = f"시험{len(self.exam_dday) + 1}"
-            self.exam_dday[key] = exam_day
-            
-            # 딕셔너리에 저장
-            self.exam_dday["시험"] = exam_day
-            # UI 갱신
-            self.display_exam_list()
-            # Entry 초기화
-            entry_widget.delete(0, tk.END)
-            entry_widget.focus_set()
-            entry_widget.configure(foreground="black")
-        else:
-            entry_widget.focus_set()
+        # 시험 이름 추가
+        if exam_name not in self.exam_dday:
+            self.exam_dday[exam_name] = ""
+            self.save_exam_dday()
+        
+        # UI 업데이트
+        self.display_exam_list()
+        
+        # 입력창 초기화
+        self.entry.configure(foreground="black")
+        self.entry.delete(0, tk.END)
+        on_focus_out(None, self.entry, "시험 이름")
+        self.entry.focus_set()
     
     # 시험 삭제 메서드
     def delete_exam(self, exam_key):
