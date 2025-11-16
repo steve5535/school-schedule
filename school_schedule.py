@@ -624,7 +624,7 @@ class ExamDDay():
         
         # 시험 이름 추가
         if exam_name not in self.exam_dday:
-            self.exam_dday[exam_name] = ""
+            self.exam_dday[exam_name] = exam_data
             self.save_exam_dday()
         else:
             self.exam_dday[exam_name] = exam_data
@@ -636,6 +636,8 @@ class ExamDDay():
         
         # 입력창 초기화
         self.entry.delete(0, tk.END)
+        self.entry_data.delete(0, tk.END)
+        on_focus_out(None, self.entry_data, "YYYY-MM-DD")
         self.entry.focus_set()
     
     # 시험 삭제 메서드
