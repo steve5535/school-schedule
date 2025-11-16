@@ -577,6 +577,7 @@ class ExamDDay():
         
         # Enter 키로 추가
         self.entry.bind('<Return>', lambda event: self.add_exam())
+        self.entry_data.bind('<Return>', lambda event: self.add_exam())
         # 추가 버튼 생성
         add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
         add_btn.grid(row=1, column=2, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
@@ -589,8 +590,21 @@ class ExamDDay():
                 widget.destroy()
         
         for i, (exam_name, exam_date) in enumerate(self.exam_dday.items()):
+            # d-day 계산
+            if exam_date:
+                exam_day = datetime.strptime(exam_date, "%Y-%m-%d")
+                dday = (exam_day - datetime.today()).days+1
+                if dday > 0:
+                    text = f"{exam_name}<{exam_date}> - D-{dday}"
+                elif dday == 0:
+                    text = f"{exam_name}<{exam_date}> - D-day"
+                elif dday < 0:
+                    text = f"{exam_name}<{exam_date}> - 끝({dday}day)"
+            else:
+                text = f"{exam_name} - 날짜 미입력"
+            
             # 시험 이름 및 날짜 표시
-            lbl = ttk.Label(self.input_frame, text=f"{exam_name}")
+            lbl = ttk.Label(self.input_frame, text=text)
             lbl.grid(row=i+2, column=0, sticky="w", padx=5, pady=2)
             
             # 삭제 버튼
@@ -598,9 +612,9 @@ class ExamDDay():
             del_btn.grid(row=i+2, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
     # 시험 이름 및 날짜 추가 메서드
-    def add_exam(self, exam_name=None, exam_data=None, event=None):
+    def add_exam(self, exam_name=None, exam_date=None, event=None):
         exam_name = self.entry.get().strip()
-        exam_data = self.entry_data.get().strip()
+        exam_date = self.entry_data.get().strip()
         
         # 시험 이름 입력 값 확인
         if not exam_name or exam_name == "시험 이름":
@@ -609,14 +623,14 @@ class ExamDDay():
             return
         
         # 시험 날짜 입력 값 확인
-        if not exam_data or exam_data == "YYYY-MM-DD":
+        if not exam_date or exam_date == "YYYY-MM-DD":
             on_focus_out(None, self.entry_data, "YYYY-MM-DD")
             self.entry_data.focus_set()
             return
         
         # 시험 날짜 형식 확인
         try:
-            exam_day = datetime.strptime(exam_data, "%Y-%m-%d")
+            exam_day = datetime.strptime(exam_date, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("날짜 오류", "날짜를 YYYY-MM-DD 형식으로 입력하세요.")
             self.entry_data.focus_set()
@@ -624,10 +638,10 @@ class ExamDDay():
         
         # 시험 이름 추가
         if exam_name not in self.exam_dday:
-            self.exam_dday[exam_name] = exam_data
+            self.exam_dday[exam_name] = exam_date
             self.save_exam_dday()
         else:
-            self.exam_dday[exam_name] = exam_data
+            self.exam_dday[exam_name] = exam_date
             self.save_exam_dday()
         
         
