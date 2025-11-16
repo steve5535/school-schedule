@@ -535,7 +535,7 @@ class ExamDDay():
         
         # 스크롤 가능한 영역 생성
         self.scroll_container, self.input_frame, self.input_canvas = create_scrollable_frame(self.tab_dday)
-        self.scroll_container.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
+        self.scroll_container.grid(row=0, column=0, sticky="nsew", padx=5, pady=(0, 5))
         
         self.tab_dday.grid_rowconfigure(0, weight=1)
         self.tab_dday.grid_columnconfigure(0, weight=1)
@@ -544,13 +544,15 @@ class ExamDDay():
         self.to_day()
         self.create_input_area()
         self.display_exam_list()
+        
+        self.notebook.bind("<<NotebookTabChanged>>", lambda event: self.tab_dday.focus_set() if self.notebook.select() == str(self.tab_dday) else None)
     
     # 오늘 날짜 표시 메서드
     def to_day(self):
         self.week_korean = get_korean_week()
         
         self.label = ttk.Label(self.input_frame, text=f'오늘 날짜 : {self.today.strftime("%Y년 %m월 %d일")} {self.week_korean}요일', font="Arial")
-        self.label.grid(row=0, column=0, padx=10, pady=1)
+        self.label.grid(row=0, column=0, padx=0, pady=0, columnspan=2, sticky="w")
     
     # 시험 날짜 입력창 생성 메서드
     def create_input_area(self):
@@ -575,14 +577,14 @@ class ExamDDay():
             if int(widget.grid_info()["row"]) >= 2:
                 widget.destroy()
         
-        for i, exam_name in enumerate(self.exam_dday.items()):
+        for i, (exam_name, exam_date) in enumerate(self.exam_dday.items()):
             # 시험 이름 및 날짜 표시
             lbl = ttk.Label(self.input_frame, text=f"{exam_name}")
             lbl.grid(row=i+2, column=0, sticky="w", padx=5, pady=2)
             
             # 삭제 버튼
-            del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda event=exam_name: self.delete_exam(event))
-            del_btn.grid(row=i+2, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK)
+            del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda key=exam_name: self.delete_exam(key))
+            del_btn.grid(row=i+2, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
     # 시험 이름 추가 메서드
     def add_exam(self, exam_name=None, event=None):
@@ -603,9 +605,7 @@ class ExamDDay():
         self.display_exam_list()
         
         # 입력창 초기화
-        self.entry.configure(foreground="black")
         self.entry.delete(0, tk.END)
-        on_focus_out(None, self.entry, "시험 이름")
         self.entry.focus_set()
     
     # 시험 삭제 메서드
