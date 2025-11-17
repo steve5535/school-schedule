@@ -19,6 +19,7 @@ APPDATA_DIR = os.path.join(os.environ['USERPROFILE'], "AppData", "Local", "Mysho
 os.makedirs(APPDATA_DIR, exist_ok=True) # 폴더 없으면 생성
 DATA_PATH = os.path.join(APPDATA_DIR, "timetable.json") # 저장 파일 경로 설정
 TMP_PATH = os.path.join(APPDATA_DIR, "timetable_temp.json") # 임시 파일 경로
+EXAM_DDAY_PATH = os.path.join(APPDATA_DIR, "exam_dday.json")
 
 # 스크롤 가능한 프레임 생성 함수
 def create_scrollable_frame(parent):
@@ -512,16 +513,14 @@ class ExamDDay():
     
     # 데이터 저장
     def save_exam_dday(self):
-        path = os.path.join(APPDATA_DIR, "exam_dday.json")
-        with open(path, "w", encoding="utf-8") as f:
+        with open(EXAM_DDAY_PATH, "w", encoding="utf-8") as f:
             json.dump(self.exam_dday, f, ensure_ascii=False, indent=4)
     
     # 데이터 불러오기
     def load_exam_dday(self):
-        path = os.path.join(APPDATA_DIR, "exam_dday.json")
-        if os.path.exists(path):
+        if os.path.exists(EXAM_DDAY_PATH):
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(EXAM_DDAY_PATH, "r", encoding="utf-8") as f:
                     self.exam_dday = json.load(f)
             except (json.JSONDecodeError, OSError):
                 self.exam_dday = {}
@@ -589,7 +588,15 @@ class ExamDDay():
             if int(widget.grid_info()["row"]) >= 2:
                 widget.destroy()
         
-        for i, (exam_name, exam_date) in enumerate(self.exam_dday.items()):
+        # D-day 기준으로 정렬
+        sorted_exams = sorted(
+            self.exam_dday.items(),
+            key=lambda x: (datetime.strptime(
+                "-".join([p.zfill(2) for p in x[1].split("-")]), "%Y-%m-%d") - datetime.today()).days
+                if x[1] else float('inf')
+        )
+        
+        for i, (exam_name, exam_date) in enumerate(sorted_exams ):
             # d-day 계산
             if exam_date:
                 exam_day = datetime.strptime(exam_date, "%Y-%m-%d")
