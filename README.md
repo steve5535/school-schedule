@@ -15,6 +15,7 @@ Python과 Tkinter를 사용하여 개발한 **학교 시간표 관리 앱**입�
 - 수업 순서 이동 (위/아래)
 - 준비물 추가, 삭제 및 목록 스크롤 지원
 - 수업 별 준비물 개수 확인
+- 시험 D-day 기능
 - 데이터 자동 저장 및 불러오기
 - 직관적인 GUI
 - 플레이홀더 텍스트 지원
@@ -31,13 +32,13 @@ python main.py
 ```
 
 ## Windows 실행 파일 실행
-1.[Release 페이지](https://github.com/steve5535/school-schedule/releases/tag/v1.1)에서 exe 파일 다운로드
+1.[Release 페이지](https://github.com/steve5535/school-schedule/releases)에서 exe 파일 다운로드
 2. 다운로드한 파일 더블 클릭으로 실행
 > 작성한 시간표 데이터는 자동으로
 > '%USERPROFILE%\AppData\Local\MyshoolApp\timetable.json' 경로에 저장됩니다.
 
 ## 개발 과정
-1. Tkinter Notebook을 사용하여 시간표 탭, 요일별 탭 구현
+1. Tkinter Notebook을 사용하여 시간표 탭, 시험 D-day 탭, 요일별 탭 구현
 2. Enter와 Button을 활용해 수업 추가 및 준비물 추가 기능 구현
 3. 수업 데이터를 JSON 파일로 저장/불러오기 구현
 4. Enter와 Button을 활용해 삭제, 수정, 순서 이동 기능 구현
@@ -55,8 +56,8 @@ python main.py
 ## 향후 계획
 - ~~준비물 추가 기능~~
 - ~~실행 파일 만들기~~
-- 시험 기간 D-day 기능
-- 표시중인 요일 위젯 색상 표시
+- ~~시험 기간 D-day 기능~~
+- ~~표시중인 요일 위젯 색상 표시~~
 - 수행평가 일정 추가 기능
 - 학교홈페이지에서 학사일정 불러와서 표시
 - 모바일 환경 대응
