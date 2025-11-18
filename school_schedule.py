@@ -619,8 +619,8 @@ class ScheduleDDay():
         schedule_date = self.entry_data.get().strip()
         
         # 일정 이름 입력 값 확인
-        if not schedule_name or schedule_name == "시험 이름":
-            on_focus_out(None, self.entry, "시험 이름")
+        if not schedule_name or schedule_name == "일정 이름":
+            on_focus_out(None, self.entry, "일정 이름")
             self.entry.focus_set()
             return
         
