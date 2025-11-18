@@ -19,7 +19,7 @@ APPDATA_DIR = os.path.join(os.environ['USERPROFILE'], "AppData", "Local", "Mysho
 os.makedirs(APPDATA_DIR, exist_ok=True) # 폴더 없으면 생성
 DATA_PATH = os.path.join(APPDATA_DIR, "timetable.json") # 저장 파일 경로 설정
 TMP_PATH = os.path.join(APPDATA_DIR, "timetable_temp.json") # 임시 파일 경로
-EXAM_DDAY_PATH = os.path.join(APPDATA_DIR, "exam_dday.json")
+SCHEDULE_DDAY_PATH = os.path.join(APPDATA_DIR, "schedule_dday.json")
 
 # 스크롤 가능한 프레임 생성 함수
 def create_scrollable_frame(parent):
@@ -497,41 +497,36 @@ class TimeTableManager:
         # 스크롤 영역 갱신
         item_canvas.after_idle(lambda: item_canvas.configure(scrollregion=item_canvas.bbox("all")))
 
-#d-day 클래스 구조
-# 실행하면 시험 날짜 입력받는 입력창 (수업 입력 입력창 참조)
-# 입력받은 값 저장 (딕셔너리 형태로 저장)
-# 현재 날짜 - 시험 날짜 (날짜 따로 저장)
-
-class ExamDDay():
+class ScheduleDDay():
     # 상태 및 데이터 초기화
     def __init__(self, root, notebook):
         self.root = root
         self.notebook = notebook
-        self.exam_dday = {} # 시험 날짜 저장 딕셔너리
+        self.schedule_dday = {} # 일정 날짜 저장 딕셔너리
         self.today = datetime.today()
-        self.load_exam_dday()
+        self.load_schedule_dday()
     
     # 데이터 저장
-    def save_exam_dday(self):
-        with open(EXAM_DDAY_PATH, "w", encoding="utf-8") as f:
-            json.dump(self.exam_dday, f, ensure_ascii=False, indent=4)
+    def save_schedule_dday(self):
+        with open(SCHEDULE_DDAY_PATH, "w", encoding="utf-8") as f:
+            json.dump(self.schedule_dday, f, ensure_ascii=False, indent=4)
     
     # 데이터 불러오기
-    def load_exam_dday(self):
-        if os.path.exists(EXAM_DDAY_PATH):
+    def load_schedule_dday(self):
+        if os.path.exists(SCHEDULE_DDAY_PATH):
             try:
-                with open(EXAM_DDAY_PATH, "r", encoding="utf-8") as f:
-                    self.exam_dday = json.load(f)
+                with open(SCHEDULE_DDAY_PATH, "r", encoding="utf-8") as f:
+                    self.schedule_dday = json.load(f)
             except (json.JSONDecodeError, OSError):
-                self.exam_dday = {}
+                self.schedule_dday = {}
         else:
-            self.exam_dday = {}
+            self.schedule_dday = {}
     
     # 메인 UI 구성 메서드
     def setup(self):
-        # 시험 d-day 탭용 프레임 생성
-        self.tab_dday = ttk.Frame(self.notebook) #  시험 날짜 탭용 프레임 생성
-        self.notebook.add(self.tab_dday, text="시험 D-day") # 탭에 프레임 연결,이름 지정
+        # 일정 d-day 탭용 프레임 생성
+        self.tab_dday = ttk.Frame(self.notebook) #  일정 날짜 탭용 프레임 생성
+        self.notebook.add(self.tab_dday, text="D-day") # 탭에 프레임 연결,이름 지정
         
         # 스크롤 가능한 영역 생성
         self.scroll_container, self.input_frame, self.input_canvas = create_scrollable_frame(self.tab_dday)
@@ -543,7 +538,7 @@ class ExamDDay():
         # 입력창 생성
         self.to_day()
         self.create_input_area()
-        self.display_exam_list()
+        self.display_schedule_list()
         
         self.notebook.bind("<<NotebookTabChanged>>", lambda event: self.tab_dday.focus_set() if self.notebook.select() == str(self.tab_dday) else None)
     
@@ -554,16 +549,16 @@ class ExamDDay():
         self.label = ttk.Label(self.input_frame, text=f'{self.today.strftime("%Y %m/%d")} {self.week_korean}요일', font="Arial")
         self.label.grid(row=0, column=0, padx=0, pady=0, columnspan=2, sticky="w")
     
-    # 시험 이름 및 날짜 입력창 생성 메서드
+    # 일정 이름 및 날짜 입력창 생성 메서드
     def create_input_area(self):
-        # 시험 이름 Entry 생성
+        # 일정 이름 Entry 생성
         self.entry = ttk.Entry(self.input_frame, width=30)
         self.entry.grid(row=1, column=0, padx=5, pady=5, sticky="w")
         # 플레이스홀더 텍스트 추가
-        self.entry.insert(0, "시험 이름") # 기본 문구
+        self.entry.insert(0, "일정 이름") # 기본 문구
         self.entry.configure(foreground="gray") # 글씨 색 연하게
-        self.entry.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry, "시험 이름"))
-        self.entry.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry, "시험 이름"))
+        self.entry.bind("<FocusIn>", lambda event: on_focus_in(event, self.entry, "일정 이름"))
+        self.entry.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry, "일정 이름"))
         
         # 날짜 Entry 생성
         self.entry_data = ttk.Entry(self.input_frame, width=15)
@@ -575,85 +570,85 @@ class ExamDDay():
         self.entry_data.bind("<FocusOut>", lambda event: on_focus_out(event, self.entry_data, "YYYY-MM-DD"))
         
         # Enter 키로 추가
-        self.entry.bind('<Return>', lambda event: self.add_exam())
-        self.entry_data.bind('<Return>', lambda event: self.add_exam())
+        self.entry.bind('<Return>', lambda event: self.add_schedule())
+        self.entry_data.bind('<Return>', lambda event: self.add_schedule())
         # 추가 버튼 생성
-        add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_exam())
+        add_btn = ttk.Button(self.input_frame, text="추가", command=lambda: self.add_schedule())
         add_btn.grid(row=1, column=2, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
-    # 시험 목록 표시 메서드
-    def display_exam_list(self):
+    # 일정 목록 표시 메서드
+    def display_schedule_list(self):
         # 기존 표시 위젯 제거
         for widget in self.input_frame.grid_slaves():
             if int(widget.grid_info()["row"]) >= 2:
                 widget.destroy()
         
         # D-day 기준으로 정렬
-        sorted_exams = sorted(
-            self.exam_dday.items(),
+        sorted_schedules = sorted(
+            self.schedule_dday.items(),
             key=lambda x: (datetime.strptime(
                 "-".join([p.zfill(2) for p in x[1].split("-")]), "%Y-%m-%d") - datetime.today()).days
                 if x[1] else float('inf')
         )
         
-        for i, (exam_name, exam_date) in enumerate(sorted_exams ):
+        for i, (schedule_name, schedule_date) in enumerate(sorted_schedules ):
             # d-day 계산
-            if exam_date:
-                exam_day = datetime.strptime(exam_date, "%Y-%m-%d")
-                dday = (exam_day - datetime.today()).days+1
+            if schedule_date:
+                schedule_day = datetime.strptime(schedule_date, "%Y-%m-%d")
+                dday = (schedule_day - datetime.today()).days+1
                 if dday > 0:
-                    text = f"{exam_name}<{exam_date}> - D-{dday}"
+                    text = f"{schedule_name}<{schedule_date}> - D-{dday}"
                 elif dday == 0:
-                    text = f"{exam_name}<{exam_date}> - D-day"
+                    text = f"{schedule_name}<{schedule_date}> - D-day"
                 elif dday < 0:
-                    text = f"{exam_name}<{exam_date}> - 끝({dday}day)"
+                    text = f"{schedule_name}<{schedule_date}> - 끝({dday}day)"
             else:
-                text = f"{exam_name} - 날짜 미입력"
+                text = f"{schedule_name} - 날짜 미입력"
             
-            # 시험 이름 및 날짜 표시
+            # 일정 이름 및 날짜 표시
             lbl = ttk.Label(self.input_frame, text=text)
             lbl.grid(row=i+2, column=0, sticky="w", padx=5, pady=2)
             
             # 삭제 버튼
-            del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda key=exam_name: self.delete_exam(key))
+            del_btn = ttk.Button(self.input_frame, text="삭제", command=lambda key=schedule_name: self.delete_schedule(key))
             del_btn.grid(row=i+2, column=1, padx=BUTTON_X_BLANK, pady=BUTTON_Y_BLANK, sticky="w")
     
-    # 시험 이름 및 날짜 추가 메서드
-    def add_exam(self, exam_name=None, exam_date=None, event=None):
-        exam_name = self.entry.get().strip()
-        exam_date = self.entry_data.get().strip()
+    # 일정 이름 및 날짜 추가 메서드
+    def add_schedule(self, schedule_name=None, schedule_date=None, event=None):
+        schedule_name = self.entry.get().strip()
+        schedule_date = self.entry_data.get().strip()
         
-        # 시험 이름 입력 값 확인
-        if not exam_name or exam_name == "시험 이름":
+        # 일정 이름 입력 값 확인
+        if not schedule_name or schedule_name == "시험 이름":
             on_focus_out(None, self.entry, "시험 이름")
             self.entry.focus_set()
             return
         
-        # 시험 날짜 입력 값 확인
-        if not exam_date or exam_date == "YYYY-MM-DD":
+        # 일정 날짜 입력 값 확인
+        if not schedule_date or schedule_date == "YYYY-MM-DD":
             on_focus_out(None, self.entry_data, "YYYY-MM-DD")
             self.entry_data.focus_set()
             return
         
-        # 시험 날짜 형식 확인
+        # 일정 날짜 형식 확인
         try:
-            exam_day = datetime.strptime(exam_date, "%Y-%m-%d")
+            schedule_day = datetime.strptime(schedule_date, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("날짜 오류", "날짜를 YYYY-MM-DD 형식으로 입력하세요.")
             self.entry_data.focus_set()
             return
         
-        # 시험 이름 추가
-        if exam_name not in self.exam_dday:
-            self.exam_dday[exam_name] = exam_date
-            self.save_exam_dday()
+        # 일정 이름 추가
+        if schedule_name not in self.schedule_dday:
+            self.schedule_dday[schedule_name] = schedule_date
+            self.save_schedule_dday()
         else:
-            self.exam_dday[exam_name] = exam_date
-            self.save_exam_dday()
+            self.schedule_dday[schedule_name] = schedule_date
+            self.save_schedule_dday()
         
         
         # UI 업데이트
-        self.display_exam_list()
+        self.display_schedule_list()
         
         # 입력창 초기화
         self.entry.delete(0, tk.END)
@@ -661,13 +656,13 @@ class ExamDDay():
         on_focus_out(None, self.entry_data, "YYYY-MM-DD")
         self.entry.focus_set()
     
-    # 시험 삭제 메서드
-    def delete_exam(self, exam_key):
-        if exam_key in self.exam_dday:
-            del self.exam_dday[exam_key]
-            self.save_exam_dday()
+    # 일정 삭제 메서드
+    def delete_schedule(self, schedule_key):
+        if schedule_key in self.schedule_dday:
+            del self.schedule_dday[schedule_key]
+            self.save_schedule_dday()
             self.create_input_area()
-            self.display_exam_list()
+            self.display_schedule_list()
 
 # 스타일 함수
 def set_styles():
@@ -705,7 +700,7 @@ if __name__ == "__main__":
     # TimeTableManaher 인스턴스 생성 및 실행
     timetable_manager = TimeTableManager(root, notebook)
     timetable_manager.setup()
-    exam_dday = ExamDDay(root, notebook)
-    exam_dday.setup()
+    schedule_dday = ScheduleDDay(root, notebook)
+    schedule_dday.setup()
     
     root.mainloop() # 메인 루프
