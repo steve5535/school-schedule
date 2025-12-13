@@ -1,9 +1,9 @@
-import tkinter as tk # tkinter라이브러리를 tk로 불러옴
+import tkinter as tk # tkinter모듈을 tk로 불러옴
 from tkinter import ttk # ttk모듈 불러옴
 from tkinter import messagebox # messagebox모듈 불러옴
-import json # json라이브러리 불러옴
-import os # os라이브러리를 파일 존재 여부 확인용으로 불러옴
-from datetime import datetime # 시간 라이브러리 불러옴
+import json # json모듈 불러옴
+import os # os모듈 파일 존재 여부 확인용으로 불러옴
+from datetime import datetime # datetime모듈 불러옴
 
 # 상수 설정
 WINDOW_WIDTH = 550 # 창 가로 길이
